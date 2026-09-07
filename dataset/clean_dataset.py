@@ -7,7 +7,7 @@ This script does two things:
 2. Maps the original severity labels into three categories:
    Critical, Medium, Low.
 
-Run this from your FYP 2 folder, with venv active:
+Run this from FYP 2 folder, with venv active:
     python clean_dataset.py
 
 Input:  eclipse_bug_records_22-07-2022.xlsx

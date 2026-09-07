@@ -22,9 +22,10 @@ import numpy as np
 import matplotlib
 matplotlib.use("Agg")  # Save plots to file, don't try to open a window
 import matplotlib.pyplot as plt
+from scipy.sparse import hstack
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -42,8 +43,25 @@ from xgboost import XGBClassifier
 # ---------------------------------------------------------
 print("Loading tfidf_features.pkl...")
 data = joblib.load("tfidf_features.pkl")
-X = data["X"]
+X_text = data["X"]
 y_raw = data["y"]
+
+# ---------------------------------------------------------
+# Step 1b: Encode product and component, combine with text features
+# ---------------------------------------------------------
+# Tuning experiment: text alone (Direction 1) barely moved the
+# numbers. product and component are categorical fields already
+# in the dataset, some components genuinely run more Critical
+# bugs than others, so this adds real signal the text can't give.
+print("Encoding product and component...")
+cat_encoder = OneHotEncoder(handle_unknown="ignore")
+product_component = np.column_stack([data["product"], data["component"]])
+X_cat = cat_encoder.fit_transform(product_component)
+
+# Combine TF-IDF text features with the categorical features.
+# hstack keeps everything sparse, so memory stays manageable.
+X = hstack([X_text, X_cat]).tocsr()
+print(f"Combined feature matrix shape: {X.shape}")
 
 # ---------------------------------------------------------
 # Step 2: Encode labels
@@ -82,10 +100,12 @@ sample_weights = compute_sample_weight(class_weight="balanced", y=y_train)
 # ---------------------------------------------------------
 print("Training XGBoost...")
 model = XGBClassifier(
-    n_estimators=200,
-    max_depth=6,
-    learning_rate=0.1,
+    n_estimators=300,
+    max_depth=7,
+    learning_rate=0.08,
     subsample=0.8,
+    colsample_bytree=0.8,
+    tree_method="hist",  # much faster on large sparse matrices
     objective="multi:softmax",
     num_class=len(label_encoder.classes_),
     eval_metric="mlogloss",
@@ -131,7 +151,7 @@ print("\nSaved confusion_matrix.png")
 # Step 9: Save the trained model
 # ---------------------------------------------------------
 joblib.dump(
-    {"model": model, "label_encoder": label_encoder},
+    {"model": model, "label_encoder": label_encoder, "cat_encoder": cat_encoder},
     "severity_model.pkl"
 )
 print("Saved severity_model.pkl")

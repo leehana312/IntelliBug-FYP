@@ -95,8 +95,10 @@ print(f"Dropped {before - len(df)} rows that became empty after cleaning.")
 # ---------------------------------------------------------
 # Converts each bug title into a numerical vector.
 # max_features caps vocabulary size, keeps the model manageable.
+# Raised from 5000 to 10000 in the tuning phase, to capture more
+# specific severity-related words that a smaller vocabulary missed.
 print("Running TF-IDF...")
-vectorizer = TfidfVectorizer(max_features=5000)
+vectorizer = TfidfVectorizer(max_features=10000)
 X = vectorizer.fit_transform(df["final_text"])
 y = df["severity_level"]
 
@@ -107,13 +109,14 @@ print(f"Vocabulary size: {len(vectorizer.vocabulary_)}")
 # Step 7: Save everything for Phase 5
 # ---------------------------------------------------------
 joblib.dump(
-    {"X": X, "y": y, "vectorizer": vectorizer},
+    {"X": X, "y": y, "vectorizer": vectorizer,
+     "product": df["product"].values, "component": df["component"].values},
     "tfidf_features.pkl"
 )
 print("Saved tfidf_features.pkl")
 
 # Also save a readable CSV, useful for screenshots in your report.
-df[["bug_id", "short_desc", "final_text", "severity_level"]].to_csv(
+df[["bug_id", "short_desc", "final_text", "product", "component", "severity_level"]].to_csv(
     "preprocessed_dataset.csv", index=False
 )
 print("Saved preprocessed_dataset.csv")
