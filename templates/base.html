@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntelliBug &mdash; {% block title %}Dashboard{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="brand">IntelliBug</div>
+    <nav>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
+      <a href="{{ url_for('submit_bug_page') }}" class="{{ 'active' if request.endpoint == 'submit_bug_page' }}">Submit Bug</a>
+      <a href="{{ url_for('bug_reports') }}" class="{{ 'active' if request.endpoint in ['bug_reports', 'bug_detail'] }}">Bug Reports</a>
+      <a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint == 'analytics' }}">Analytics</a>
+      <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">Settings</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="page-sub">{% block page_sub %}{% endblock %}</div>
+      </div>
+      <div class="user-menu">
+        {{ current_user.full_name }} &middot; {{ current_user.role }}
+        <a href="{{ url_for('logout') }}">Log out</a>
+      </div>
+    </div>
+
+    <div class="content">
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

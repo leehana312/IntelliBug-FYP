@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IntelliBug &mdash; Sign In</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-side">
+      <h1>AI-Assisted Bug Severity Classification &amp; Recommendation System</h1>
+      <p>Classify severity automatically. Get an AI recommendation with every bug.</p>
+      <div class="auth-badges">
+        <span class="mini-badge critical">Critical</span>
+        <span class="mini-badge medium">Medium</span>
+        <span class="mini-badge low">Low</span>
+      </div>
+    </div>
+    <div class="auth-form">
+      <h2>Welcome back</h2>
+      <p class="sub">Sign in to your QA account</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <div class="flash">{{ messages[0] }}</div>
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <label for="email">Email</label>
+        <input type="text" id="email" name="email" placeholder="you@company.com" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required>
+
+        <button type="submit" style="width:100%; margin-top:22px;">Sign In</button>
+      </form>
+
+      <p class="switch-link">Don&rsquo;t have an account? <a href="{{ url_for('register') }}" style="color: var(--coffee); font-weight:600;">Create one</a></p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

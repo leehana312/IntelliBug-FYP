@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block page_title %}Bug Analytics{% endblock %}
+{% block page_sub %}Trends across severity, product, and resolution time{% endblock %}
+
+{% block content %}
+
+<div class="grid-2">
+
+  <div class="card">
+    <h2>Bug Reports Over Time (Last 8 Weeks)</h2>
+    <canvas id="trendChart" height="180"></canvas>
+  </div>
+
+  <div class="card">
+    <h2>Open Bugs by Product</h2>
+    {% if product_labels %}
+    <canvas id="productChart" height="180"></canvas>
+    {% else %}
+    <p class="muted">No open bugs with a product set yet.</p>
+    {% endif %}
+  </div>
+
+</div>
+
+<div class="grid-2">
+
+  <div class="card">
+    <h2>Average Resolution Time by Severity</h2>
+    <div class="stat-grid" style="margin-bottom:0;">
+      <div class="stat-card critical">
+        <div class="num">{{ avg_resolution['Critical'] if avg_resolution['Critical'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Critical'] is not none }}</div>
+        <div class="label">Critical</div>
+      </div>
+      <div class="stat-card medium">
+        <div class="num">{{ avg_resolution['Medium'] if avg_resolution['Medium'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Medium'] is not none }}</div>
+        <div class="label">Medium</div>
+      </div>
+      <div class="stat-card low">
+        <div class="num">{{ avg_resolution['Low'] if avg_resolution['Low'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Low'] is not none }}</div>
+        <div class="label">Low</div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:12px;">Based on bugs marked Resolved so far. Shows &mdash; until you have resolved bugs in that category.</p>
+  </div>
+
+  <div class="card">
+    <h2>Model Performance (XGBoost)</h2>
+    <p class="muted" style="margin-bottom:14px;">From Phase 5 evaluation on the test set, not live data.</p>
+    {% for label, value in [('Accuracy', model_performance.accuracy), ('Precision', model_performance.precision), ('Recall', model_performance.recall), ('F1-score', model_performance.f1)] %}
+    <div style="margin-bottom:10px;">
+      <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+        <span>{{ label }}</span><span>{{ value }}%</span>
+      </div>
+      <div style="background: var(--border); border-radius:4px; height:8px; overflow:hidden;">
+        <div style="background: var(--coffee); width: {{ value }}%; height:100%;"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+const trendCtx = document.getElementById('trendChart');
+new Chart(trendCtx, {
+  type: 'line',
+  data: {
+    labels: {{ trend_labels|tojson }},
+    datasets: [
+      { label: 'Critical', data: {{ trend_data['Critical']|tojson }}, borderColor: '#c0392b', backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'Medium', data: {{ trend_data['Medium']|tojson }}, borderColor: '#b8860b', backgroundColor: 'transparent', tension: 0.3 },
+      { label: 'Low', data: {{ trend_data['Low']|tojson }}, borderColor: '#4a7856', backgroundColor: 'transparent', tension: 0.3 },
+    ]
+  },
+  options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+
+{% if product_labels %}
+const productCtx = document.getElementById('productChart');
+new Chart(productCtx, {
+  type: 'bar',
+  data: {
+    labels: {{ product_labels|tojson }},
+    datasets: [{ data: {{ product_data|tojson }}, backgroundColor: '#6e4e37' }]
+  },
+  options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+});
+{% endif %}
+</script>
+{% endblock %}

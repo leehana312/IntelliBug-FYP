@@ -27,17 +27,17 @@ form.addEventListener("submit", async (e) => {
       throw new Error(data.error || "Something went wrong.");
     }
 
-    // Show the result
     severityBadge.textContent = data.severity;
     severityBadge.className = "badge " + data.severity.toLowerCase();
     recommendationText.textContent = data.recommendation;
     resultPanel.hidden = false;
+    form.reset();
 
   } catch (err) {
     errorMsg.textContent = err.message;
     errorMsg.hidden = false;
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = "Classify bug";
+    submitBtn.textContent = "Submit Report";
   }
 });

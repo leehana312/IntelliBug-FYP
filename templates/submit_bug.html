@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Submit Bug{% endblock %}
+{% block page_title %}Submit New Bug Report{% endblock %}
+{% block page_sub %}Severity is predicted automatically. You do not choose it here.{% endblock %}
+
+{% block content %}
+
+<div class="grid-2" style="grid-template-columns: 2fr 1fr; align-items: start;">
+
+  <div class="card">
+    <form id="bug-form">
+      <div class="form-row">
+        <label for="title">Bug Title</label>
+        <input type="text" id="title" name="title" placeholder="e.g. Login button unresponsive on Safari" required>
+      </div>
+
+      <div class="form-row form-row-split">
+        <div>
+          <label for="product">Product / Module</label>
+          <input type="text" id="product" name="product" placeholder="e.g. Customer Portal">
+        </div>
+        <div>
+          <label for="environment">Environment</label>
+          <input type="text" id="environment" name="environment" placeholder="e.g. Chrome 126, Windows 11">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label for="steps">Steps to Reproduce</label>
+        <textarea id="steps" name="steps" rows="3" placeholder="1. Open login page 2. Enter valid credentials 3. Click Submit"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label for="description">Bug Description</label>
+        <textarea id="description" name="description" rows="5" placeholder="Expected: user reaches dashboard. Actual: page reloads to blank login form." required></textarea>
+      </div>
+
+      <button type="submit" id="submit-btn">Submit Report</button>
+      <span class="muted" style="margin-left:10px;">Severity and recommendation appear below.</span>
+    </form>
+
+    <div class="card result-panel" id="result-panel" hidden style="margin-top:20px;">
+      <h2>Result</h2>
+      <span class="badge" id="severity-badge">&mdash;</span>
+      <div class="recommendation-box" id="recommendation-text">&mdash;</div>
+    </div>
+
+    <p class="flash" id="error-msg" hidden style="margin-top:16px;"></p>
+  </div>
+
+  <div class="card">
+    <h2>What happens next</h2>
+    <p class="muted">1. NLP cleans and tokenizes your description.</p>
+    <p class="muted">2. XGBoost predicts severity: Critical, Medium, or Low.</p>
+    <p class="muted">3. Claude AI drafts a suggested fix.</p>
+    <p class="muted">4. Your report appears on the dashboard and in Bug Reports.</p>
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='submit.js') }}"></script>
+{% endblock %}

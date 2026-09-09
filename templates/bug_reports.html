@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Bug Reports{% endblock %}
+{% block page_title %}Bug Reports{% endblock %}
+{% block page_sub %}All submitted reports with predicted severity and status{% endblock %}
+
+{% block content %}
+
+<form class="filters" method="GET" action="{{ url_for('bug_reports') }}">
+  <input type="text" name="q" placeholder="Search by title" value="{{ search }}">
+
+  <select name="severity">
+    <option value="All" {{ 'selected' if severity_filter == 'All' }}>Severity: All</option>
+    <option value="Critical" {{ 'selected' if severity_filter == 'Critical' }}>Critical</option>
+    <option value="Medium" {{ 'selected' if severity_filter == 'Medium' }}>Medium</option>
+    <option value="Low" {{ 'selected' if severity_filter == 'Low' }}>Low</option>
+  </select>
+
+  <select name="status">
+    <option value="All" {{ 'selected' if status_filter == 'All' }}>Status: All</option>
+    <option value="Open" {{ 'selected' if status_filter == 'Open' }}>Open</option>
+    <option value="In Progress" {{ 'selected' if status_filter == 'In Progress' }}>In Progress</option>
+    <option value="Resolved" {{ 'selected' if status_filter == 'Resolved' }}>Resolved</option>
+  </select>
+
+  <button type="submit">Filter</button>
+  <a href="{{ url_for('submit_bug_page') }}" class="btn" style="margin-left:auto;">+ New Bug</a>
+</form>
+
+<div class="card">
+  {% if reports %}
+  <table>
+    <tr><th>ID</th><th>Title</th><th>Product</th><th>Severity</th><th>Status</th><th>Reported</th></tr>
+    {% for r in reports %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td><a href="{{ url_for('bug_detail', report_id=r.id) }}">{{ r.title }}</a></td>
+      <td>{{ r.product or '&mdash;' }}</td>
+      <td><span class="badge {{ r.severity|lower }}">{{ r.severity }}</span></td>
+      <td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
+      <td class="muted">{{ r.created_at.strftime('%d %b %Y') }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No bug reports match this filter.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

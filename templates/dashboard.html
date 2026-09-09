@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard Overview{% endblock %}
+{% block page_sub %}Live view of bug severity, status, and AI recommendations{% endblock %}
+
+{% block content %}
+
+<div class="stat-grid">
+  <div class="stat-card critical">
+    <div class="num">{{ critical_count }}</div>
+    <div class="label">Critical Bugs Open</div>
+  </div>
+  <div class="stat-card medium">
+    <div class="num">{{ medium_count }}</div>
+    <div class="label">Medium Bugs Open</div>
+  </div>
+  <div class="stat-card low">
+    <div class="num">{{ low_count }}</div>
+    <div class="label">Low Bugs Open</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Recent Bug Reports</h2>
+  {% if recent %}
+  <table>
+    <tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th></tr>
+    {% for r in recent %}
+    <tr>
+      <td>{{ r.id }}</td>
+      <td><a href="{{ url_for('bug_detail', report_id=r.id) }}">{{ r.title }}</a></td>
+      <td><span class="badge {{ r.severity|lower }}">{{ r.severity }}</span></td>
+      <td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No bug reports yet. Submit your first bug to see it here.</p>
+  {% endif %}
+</div>
+
+{% if latest_critical %}
+<div class="card result-panel">
+  <h2>AI Solution Recommendation &mdash; Claude AI</h2>
+  <p class="muted">Bug #{{ latest_critical.id }} &middot; {{ latest_critical.title }}</p>
+  <span class="badge critical">Critical</span>
+  <div class="recommendation-box">{{ latest_critical.recommendation }}</div>
+</div>
+{% endif %}
+
+{% endblock %}
