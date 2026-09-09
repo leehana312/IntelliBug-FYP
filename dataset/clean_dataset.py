@@ -1,19 +1,3 @@
-"""
-Phase 3: Data Preparation
-FYP II - Bug Severity Classification System
-
-This script does two things:
-1. Cleans the raw Eclipse bug dataset.
-2. Maps the original severity labels into three categories:
-   Critical, Medium, Low.
-
-Run this from FYP 2 folder, with venv active:
-    python clean_dataset.py
-
-Input:  eclipse_bug_records_22-07-2022.xlsx
-Output: cleaned_dataset.csv
-"""
-
 import pandas as pd
 
 # ---------------------------------------------------------

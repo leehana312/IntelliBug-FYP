@@ -1,21 +1,3 @@
-"""
-Phase 4: NLP Pipeline
-FYP II - Bug Severity Classification System
-
-This script does two things:
-1. Text preprocessing: cleans, tokenizes, and removes stopwords
-   from the bug title (short_desc).
-2. Feature extraction: converts the cleaned text into TF-IDF
-   numerical features, ready for XGBoost in Phase 5.
-
-Run this from your dataset folder, with venv active:
-    python nlp_pipeline.py
-
-Input:  cleaned_dataset.csv   (from Phase 3)
-Output: tfidf_features.pkl    (TF-IDF matrix + vectorizer + labels)
-        preprocessed_dataset.csv  (readable version, for your report)
-"""
-
 import pandas as pd
 import nltk
 import joblib

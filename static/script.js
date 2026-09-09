@@ -1,7 +1,3 @@
-// IntelliBug — Phase 6
-// Handles the bug submission form: sends title and description
-// to the Flask backend, then displays the result.
-
 const form = document.getElementById("bug-form");
 const submitBtn = document.getElementById("submit-btn");
 const resultPanel = document.getElementById("result-panel");

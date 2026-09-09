@@ -1,22 +1,3 @@
-"""
-Phase 5: XGBoost Model
-FYP II - Bug Severity Classification System
-
-This script does:
-1. Split the dataset into training and testing sets.
-2. Train an XGBoost classifier on the TF-IDF features.
-3. Test the model on unseen data.
-4. Evaluate performance with accuracy, precision, recall, F1, confusion matrix.
-5. Uses class weighting to handle the Medium class dominating the data.
-
-Run this from your dataset folder, with venv active:
-    python train_model.py
-
-Input:  tfidf_features.pkl   (from Phase 4)
-Output: severity_model.pkl   (trained model + label encoder)
-        confusion_matrix.png (visual evaluation result, for your report)
-"""
-
 import joblib
 import numpy as np
 import matplotlib
