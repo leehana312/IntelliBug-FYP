@@ -1,15 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ current_user.theme if current_user.is_authenticated else 'light' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IntelliBug &mdash; {% block title %}Dashboard{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+<script>
+  // Runs before the page paints, so there's no flash of the wrong
+  // theme. If the user's saved preference is "system", check the
+  // OS setting directly, since the server doesn't know that.
+  (function() {
+    const saved = document.documentElement.getAttribute('data-theme');
+    if (saved === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+  })();
+</script>
 </head>
 <body>
 <div class="shell">
 
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="brand">IntelliBug</div>
     <nav>
       <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
@@ -22,13 +34,21 @@
 
   <div class="main">
     <div class="topbar">
-      <div>
-        <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
-        <div class="page-sub">{% block page_sub %}{% endblock %}</div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle navigation">&#9776;</button>
+        <div>
+          <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+          <div class="page-sub">{% block page_sub %}{% endblock %}</div>
+        </div>
       </div>
       <div class="user-menu">
+        <div class="theme-toggle" id="theme-toggle">
+          <button data-theme-value="light" title="Light">&#9728;</button>
+          <button data-theme-value="dark" title="Dark">&#9789;</button>
+          <button data-theme-value="system" title="System">&#9881;</button>
+        </div>
         {{ current_user.full_name }} &middot; {{ current_user.role }}
-        <a href="{{ url_for('logout') }}">Log out</a>
+        <a href="#" id="logout-link">Log out</a>
       </div>
     </div>
 
@@ -43,6 +63,50 @@
   </div>
 
 </div>
+
+<script>
+  // Sidebar collapse, remembered per browser via localStorage.
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  if (localStorage.getItem('sidebarCollapsed') === 'true') {
+    sidebar.classList.add('collapsed');
+  }
+  toggleBtn.addEventListener('click', () => {
+    sidebar.classList.toggle('collapsed');
+    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+  });
+
+  // Theme toggle buttons, saves to your account via /theme.
+  const themeButtons = document.querySelectorAll('#theme-toggle button');
+  const savedTheme = "{{ current_user.theme if current_user.is_authenticated else 'system' }}";
+  themeButtons.forEach(btn => {
+    if (btn.dataset.themeValue === savedTheme) btn.classList.add('active');
+    btn.addEventListener('click', async () => {
+      const value = btn.dataset.themeValue;
+      themeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      let applied = value;
+      if (value === 'system') {
+        applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', applied);
+
+      const formData = new FormData();
+      formData.append('theme', value);
+      await fetch("{{ url_for('set_theme') }}", { method: 'POST', body: formData });
+    });
+  });
+
+  // Logout confirmation, avoids an accidental click ending the session.
+  document.getElementById('logout-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (confirm('Log out of IntelliBug?')) {
+      window.location.href = "{{ url_for('logout') }}";
+    }
+  });
+</script>
+
 {% block scripts %}{% endblock %}
 </body>
 </html>

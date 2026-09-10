@@ -25,8 +25,11 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    google_id = db.Column(db.String(100), unique=True, nullable=True)
+    avatar_url = db.Column(db.String(500), nullable=True)
     role = db.Column(db.String(30), default="QA Engineer")
+    profession = db.Column(db.String(50), nullable=True)
+    theme = db.Column(db.String(10), default="system")  # light, dark, system
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     reports = db.relationship("BugReport", backref="reporter", lazy=True)

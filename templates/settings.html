@@ -1,30 +1,85 @@
 {% extends "base.html" %}
 {% block title %}Settings{% endblock %}
 {% block page_title %}Settings{% endblock %}
-{% block page_sub %}Account and profile{% endblock %}
+{% block page_sub %}Account, profile, and appearance{% endblock %}
 
 {% block content %}
 
-<div class="card" style="max-width:480px;">
-  <h2>Account Settings</h2>
-  <form method="POST" action="{{ url_for('settings') }}">
-    <div class="form-row">
-      <label for="full_name">Full Name</label>
-      <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}">
-    </div>
+<div class="grid-2" style="align-items:start;">
 
-    <div class="form-row">
-      <label>Email</label>
-      <input type="text" value="{{ current_user.email }}" disabled>
-    </div>
+  <div class="card">
+    <h2>Account Settings</h2>
+    <form method="POST" action="{{ url_for('settings') }}">
+      <div class="form-row">
+        <label for="full_name">Full Name</label>
+        <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}">
+      </div>
 
-    <div class="form-row">
-      <label>Role</label>
-      <input type="text" value="{{ current_user.role }}" disabled>
-    </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input type="text" value="{{ current_user.email }}" disabled>
+      </div>
 
-    <button type="submit">Save Changes</button>
-  </form>
+      <div class="form-row">
+        <label for="role">Role</label>
+        <select id="role" name="role">
+          {% for option in ["QA Engineer", "Developer", "Admin"] %}
+          <option value="{{ option }}" {{ 'selected' if current_user.role == option }}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row">
+        <label for="profession">What best describes your work?</label>
+        <select id="profession" name="profession">
+          <option value="" {{ 'selected' if not current_user.profession }}>Select one</option>
+          {% for option in ["Software Engineering", "Quality Assurance / Testing", "Medical / Healthcare", "Finance", "Design", "Marketing", "Education", "Student", "Data / Analytics", "Product Management", "Other"] %}
+          <option value="{{ option }}" {{ 'selected' if current_user.profession == option }}>{{ option }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <input type="hidden" name="theme" value="{{ current_user.theme }}">
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Appearance</h2>
+    <p class="muted" style="margin-bottom:14px;">Choose how IntelliBug looks. System follows your device setting.</p>
+    <div class="theme-toggle" style="display:inline-flex;">
+      <button type="button" data-theme-value="light">Light</button>
+      <button type="button" data-theme-value="dark">Dark</button>
+      <button type="button" data-theme-value="system">System</button>
+    </div>
+    <p class="muted" style="margin-top:14px;">This also has a quick toggle in the top bar on every page.</p>
+  </div>
+
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const settingsThemeButtons = document.querySelectorAll('.card .theme-toggle button');
+  const currentTheme = "{{ current_user.theme }}";
+  settingsThemeButtons.forEach(btn => {
+    if (btn.dataset.themeValue === currentTheme) btn.classList.add('active');
+    btn.addEventListener('click', async () => {
+      const value = btn.dataset.themeValue;
+      settingsThemeButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      let applied = value;
+      if (value === 'system') {
+        applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', applied);
+
+      const formData = new FormData();
+      formData.append('theme', value);
+      await fetch("{{ url_for('set_theme') }}", { method: 'POST', body: formData });
+    });
+  });
+</script>
 {% endblock %}

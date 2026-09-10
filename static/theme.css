@@ -32,6 +32,66 @@
   --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
 }
 
+/* Dark mode. Same warm coffee character, inverted for a
+   dark-roast surface instead of switching to generic dark gray. */
+html[data-theme="dark"] {
+  --coffee: #b8916f;
+  --coffee-dark: #a37e5c;
+  --coffee-light: #d4b696;
+  --ivory: #221811;
+  --ivory-panel: #2c2119;
+  --border: #4a3a2c;
+  --text: #f0e6d8;
+  --text-muted: #b3a08c;
+
+  --critical-bg: rgba(192, 57, 43, 0.18);
+  --medium-bg: rgba(184, 134, 11, 0.18);
+  --low-bg: rgba(74, 120, 86, 0.18);
+  --critical: #e5786b;
+  --medium: #e0b04a;
+  --low: #7cb88c;
+
+  --status-open-bg: rgba(184, 134, 11, 0.18);
+  --status-progress-bg: rgba(58, 110, 165, 0.2);
+  --status-resolved-bg: rgba(74, 120, 86, 0.18);
+  --status-open: #e0b04a;
+  --status-progress: #7ba8dc;
+  --status-resolved: #7cb88c;
+}
+
+/* Dark mode palette. Same structure, inverted warmth: a deep
+   coffee-black surface instead of ivory, panels lift slightly
+   off the background instead of sitting on white. */
+[data-theme="dark"] {
+  --coffee: #c9a27c;
+  --coffee-dark: #a9835f;
+  --coffee-light: #e3caa8;
+  --ivory: #211812;
+  --ivory-panel: #2b201a;
+  --border: #3d2f26;
+  --text: #f3e9de;
+  --text-muted: #b3a294;
+
+  --critical: #e8756a;
+  --critical-bg: #402420;
+  --medium: #e0b64f;
+  --medium-bg: #3c331e;
+  --low: #7fb08c;
+  --low-bg: #223228;
+
+  --status-open: #e0b64f;
+  --status-open-bg: #3c331e;
+  --status-progress: #7fa8d6;
+  --status-progress-bg: #202c3a;
+  --status-resolved: #7fb08c;
+  --status-resolved-bg: #223228;
+}
+
+body { transition: background-color 0.2s ease, color 0.2s ease; }
+.sidebar, .card, .stat-card, table, input, textarea, select, button {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
 * { box-sizing: border-box; }
 
 body {
@@ -51,99 +111,187 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--ivory);
+  background: radial-gradient(circle at 30% 20%, #f4ecd2 0%, var(--ivory) 55%);
   padding: 20px;
 }
 
 .auth-card {
   display: flex;
-  max-width: 780px;
+  max-width: 900px;
   width: 100%;
-  background: var(--ivory-panel);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  min-height: 560px;
+  background: var(--coffee-dark);
+  border-radius: 28px;
   overflow: hidden;
+  box-shadow: 0 30px 70px rgba(74, 54, 39, 0.28);
 }
 
-.auth-side {
-  background: var(--coffee);
-  color: var(--ivory);
-  padding: 40px 36px;
-  width: 42%;
+/* Illustration side, ivory panel with an organic curved right
+   edge instead of a straight divider. */
+.auth-illustration {
+  background: var(--ivory-panel);
+  width: 46%;
+  padding: 36px 30px;
+  position: relative;
+  border-radius: 28px 45% 55% 28px / 28px 60% 40% 28px;
   display: flex;
   flex-direction: column;
+}
+
+.auth-illustration .brand-mark {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--coffee);
+  letter-spacing: 0.02em;
+}
+
+.auth-illustration .brand-mark span {
+  color: var(--text-muted);
+  font-weight: 400;
+  display: block;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.auth-illustration .illus-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
   justify-content: center;
 }
 
-.auth-side h1 {
-  font-size: 22px;
-  line-height: 1.3;
-  margin: 0 0 14px;
-}
+.auth-illustration .illus-wrap svg { width: 100%; max-width: 260px; height: auto; }
 
-.auth-side p {
-  font-size: 13px;
-  color: #e3d5c4;
-  margin: 0 0 20px;
-}
-
-.auth-badges { display: flex; gap: 8px; flex-wrap: wrap; }
-
-.mini-badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 20px;
-}
-.mini-badge.critical { background: var(--critical-bg); color: var(--critical); }
-.mini-badge.medium { background: var(--medium-bg); color: var(--medium); }
-.mini-badge.low { background: var(--low-bg); color: var(--low); }
-
-.auth-form {
-  width: 58%;
-  padding: 40px 36px;
-}
-
-.auth-form h2 {
-  font-size: 20px;
-  margin: 0 0 4px;
-}
-
-.auth-form .sub {
-  font-size: 13px;
+.auth-illustration .illus-footer {
+  font-size: 10px;
   color: var(--text-muted);
-  margin: 0 0 24px;
 }
 
-.auth-form label {
+/* Dark form side */
+.auth-form-side {
+  width: 54%;
+  padding: 48px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  color: var(--ivory);
+}
+
+/* Chrome sheen across the dark panel */
+.auth-form-side::before {
+  content: "";
+  position: absolute;
+  top: -40%; right: -10%;
+  width: 55%; height: 180%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.06), transparent);
+  transform: rotate(12deg);
+  pointer-events: none;
+}
+
+.auth-form-side h2 {
+  font-size: 26px;
+  margin: 0 0 6px;
+  color: #fff;
+}
+
+.auth-form-side .sub {
+  font-size: 13px;
+  color: #cdbba5;
+  margin: 0 0 26px;
+}
+
+.auth-form-side label {
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: var(--text);
+  color: #e3d5c4;
   margin: 16px 0 6px;
 }
 
-.auth-form label:first-of-type { margin-top: 0; }
+.auth-form-side label:first-of-type { margin-top: 0; }
 
-.auth-form input {
+.auth-form-side input {
   width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  padding: 11px 18px;
   font-size: 14px;
-  background: var(--ivory);
-  color: var(--text);
+  background: rgba(0,0,0,0.2);
+  color: #fff;
 }
 
-.auth-form input:focus {
+.auth-form-side input::placeholder { color: #a08d78; }
+
+.auth-form-side input:focus {
   outline: none;
-  border-color: var(--coffee);
+  border-color: var(--coffee-light);
+  background: rgba(0,0,0,0.3);
 }
 
-.auth-form .switch-link {
+.auth-form-side .forgot-link {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: #cdbba5;
+  text-decoration: none;
+  margin-top: 8px;
+}
+.auth-form-side .forgot-link:hover { color: #fff; }
+
+.auth-form-side button[type="submit"] {
+  width: 100%;
+  border-radius: 24px;
+  padding: 12px 18px;
+  margin-top: 24px;
+  background: linear-gradient(145deg, #f3e6cf 0%, #e0c9a6 55%, #c9ac82 100%);
+  color: var(--coffee-dark);
+  font-weight: 700;
+}
+.auth-form-side button[type="submit"]:hover {
+  background: linear-gradient(145deg, #f3e6cf 0%, #d9bf98 100%);
+}
+
+.auth-form-side .switch-link {
   font-size: 13px;
-  margin-top: 18px;
-  color: var(--text-muted);
+  margin-top: 22px;
+  color: #cdbba5;
+  text-align: center;
+}
+.auth-form-side .switch-link a { color: #f3e6cf; font-weight: 600; text-decoration: none; }
+
+.auth-form-side .terms-link {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 11px;
+}
+.auth-form-side .terms-link a { color: #a08d78; text-decoration: none; }
+.auth-form-side .terms-link a:hover { color: #cdbba5; }
+
+.google-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  background: linear-gradient(145deg, #fdfaf3 0%, #f0e6d2 55%, #e0d0b0 100%);
+  color: var(--coffee-dark);
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 24px;
+  padding: 12px 20px;
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 2px 8px rgba(0,0,0,0.15);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.15s ease;
+}
+.google-btn:hover { transform: translateY(-1px); }
+
+@media (max-width: 720px) {
+  .auth-card { flex-direction: column; border-radius: 20px; }
+  .auth-illustration, .auth-form-side { width: 100%; }
+  .auth-illustration { border-radius: 20px 20px 0 0; }
 }
 
 .flash {
@@ -165,6 +313,14 @@ a { color: inherit; }
   color: var(--ivory);
   padding: 22px 0;
   flex-shrink: 0;
+  transition: width 0.2s ease, padding 0.2s ease;
+  overflow: hidden;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .sidebar .brand {
@@ -173,6 +329,7 @@ a { color: inherit; }
   padding: 0 22px 22px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
   margin-bottom: 14px;
+  white-space: nowrap;
 }
 
 .sidebar nav a {
@@ -182,6 +339,7 @@ a { color: inherit; }
   text-decoration: none;
   color: #e3d5c4;
   border-left: 3px solid transparent;
+  white-space: nowrap;
 }
 
 .sidebar nav a.active {
@@ -210,15 +368,83 @@ a { color: inherit; }
 .user-menu { font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:10px; }
 .user-menu a { color: var(--coffee); font-weight: 600; text-decoration: none; }
 
-.content { padding: 26px 28px; }
+.content {
+  padding: 26px 28px;
+  animation: pageFade 0.28s ease-out;
+}
+
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.sidebar-toggle {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.sidebar-toggle:hover { background: var(--border); }
+
+.theme-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px;
+}
+.theme-toggle button {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+}
+.theme-toggle button.active {
+  background: var(--coffee);
+  color: #fff;
+}
+.theme-toggle button:hover:not(.active) { background: var(--border); }
 
 /* ---------- Cards ---------- */
 
 .card {
-  background: var(--ivory-panel);
+  background: linear-gradient(180deg, rgba(255,255,255,0.55) 0%, var(--ivory-panel) 45%);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 20px;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 16px rgba(0,0,0,0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* A thin bright line along the top edge, the classic chrome highlight */
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 12px; right: 12px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+}
+
+html[data-theme="dark"] .card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, var(--ivory-panel) 45%);
+}
+html[data-theme="dark"] .card::before {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
 }
 
 .card h2 { font-size: 15px; margin: 0 0 16px; }
@@ -310,24 +536,50 @@ input:focus, textarea:focus, select:focus {
 }
 
 button, .btn {
-  background: var(--coffee);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(145deg, var(--coffee-light) 0%, var(--coffee) 55%, var(--coffee-dark) 100%);
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   padding: 10px 18px;
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.15);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-button:hover, .btn:hover { background: var(--coffee-dark); }
+
+/* The chrome shine, a light band that sweeps across on hover */
+button::after, .btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -75%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.45), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+button:hover, .btn:hover {
+  background: linear-gradient(145deg, var(--coffee-light) 0%, var(--coffee-dark) 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  transform: translateY(-1px);
+}
+button:hover::after, .btn:hover::after { left: 130%; }
+
+button:active, .btn:active { transform: translateY(0); }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .btn-outline {
-  background: transparent;
+  background: linear-gradient(145deg, rgba(255,255,255,0.4), rgba(255,255,255,0.05));
   color: var(--coffee);
   border: 1px solid var(--coffee);
+  box-shadow: none;
 }
 .btn-outline:hover { background: var(--coffee); color: #fff; }
 

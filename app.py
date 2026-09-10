@@ -24,7 +24,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user
 )
-from werkzeug.security import generate_password_hash, check_password_hash
+from authlib.integrations.flask_client import OAuth
 from xgboost import XGBClassifier
 from dotenv import load_dotenv
 import anthropic
@@ -60,6 +60,19 @@ login_manager.login_view = "login"
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+# ---------------------------------------------------------
+# Google OAuth setup
+# ---------------------------------------------------------
+oauth = OAuth(app)
+google = oauth.register(
+    name="google",
+    client_id=os.getenv("GOOGLE_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
 
 
 # ---------------------------------------------------------
@@ -111,50 +124,54 @@ Suggest a brief, practical fix or next step for a developer to investigate this 
 # ---------------------------------------------------------
 # Auth routes
 # ---------------------------------------------------------
-@app.route("/register", methods=["GET", "POST"])
-def register():
-    if request.method == "POST":
-        full_name = request.form.get("full_name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
+@app.route("/login")
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+    return render_template("login.html")
 
-        if not full_name or not email or not password:
-            flash("Please fill in every field.")
-            return redirect(url_for("register"))
 
-        if User.query.filter_by(email=email).first():
-            flash("An account with this email already exists.")
-            return redirect(url_for("register"))
+@app.route("/login/google")
+def login_google():
+    redirect_uri = url_for("auth_google_callback", _external=True)
+    return google.authorize_redirect(redirect_uri)
 
+
+@app.route("/auth/google/callback")
+def auth_google_callback():
+    token = google.authorize_access_token()
+    user_info = token.get("userinfo")
+
+    if not user_info or not user_info.get("email"):
+        flash("Google sign-in failed. Please try again.")
+        return redirect(url_for("login"))
+
+    google_id = user_info["sub"]
+    email = user_info["email"].lower()
+    full_name = user_info.get("name", email.split("@")[0])
+    avatar_url = user_info.get("picture")
+
+    # Find by Google ID first, then by email as a fallback, in case
+    # this account was created before Google sign-in was added.
+    user = User.query.filter_by(google_id=google_id).first()
+    if user is None:
+        user = User.query.filter_by(email=email).first()
+
+    if user is None:
         user = User(
             full_name=full_name,
             email=email,
-            password_hash=generate_password_hash(password),
+            google_id=google_id,
+            avatar_url=avatar_url,
         )
         db.session.add(user)
-        db.session.commit()
+    else:
+        user.google_id = google_id
+        user.avatar_url = avatar_url
 
-        login_user(user)
-        return redirect(url_for("dashboard"))
-
-    return render_template("register.html")
-
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-
-        user = User.query.filter_by(email=email).first()
-        if user and check_password_hash(user.password_hash, password):
-            login_user(user)
-            return redirect(url_for("dashboard"))
-
-        flash("Incorrect email or password.")
-        return redirect(url_for("login"))
-
-    return render_template("login.html")
+    db.session.commit()
+    login_user(user)
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/logout")
@@ -379,11 +396,30 @@ def analytics():
 def settings():
     if request.method == "POST":
         current_user.full_name = request.form.get("full_name", current_user.full_name).strip()
+        current_user.profession = request.form.get("profession", current_user.profession)
+        current_user.role = request.form.get("role", current_user.role)
+        current_user.theme = request.form.get("theme", current_user.theme)
         db.session.commit()
         flash("Changes saved.")
         return redirect(url_for("settings"))
 
     return render_template("settings.html")
+
+
+@app.route("/theme", methods=["POST"])
+@login_required
+def set_theme():
+    """
+    Quick theme toggle from the topbar, separate from the full
+    Settings form, so switching light/dark doesn't need a page
+    reload through the whole settings save flow.
+    """
+    theme = request.form.get("theme")
+    if theme not in ("light", "dark", "system"):
+        return jsonify({"error": "Invalid theme"}), 400
+    current_user.theme = theme
+    db.session.commit()
+    return jsonify({"theme": theme})
 
 
 if __name__ == "__main__":
