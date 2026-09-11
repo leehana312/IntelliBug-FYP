@@ -1,42 +1,70 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
-{% block page_title %}Dashboard Overview{% endblock %}
-{% block page_sub %}Live view of bug severity, status, and AI recommendations{% endblock %}
+{% block page_title %}Hello, {{ current_user.full_name.split(' ')[0] }}!{% endblock %}
+{% block page_sub %}Here's what's happening with your bug reports{% endblock %}
 
 {% block content %}
 
 <div class="stat-grid">
-  <div class="stat-card critical">
-    <div class="num">{{ critical_count }}</div>
-    <div class="label">Critical Bugs Open</div>
+  <div class="ring-card critical" style="--ring-color: var(--critical); --ring-pct: {{ critical_pct }};">
+    <div class="ring"><div class="ring-inner">{{ critical_pct }}%</div></div>
+    <div>
+      <div class="ring-label">{{ critical_count }} Critical</div>
+      <div class="ring-sub">Bugs open</div>
+    </div>
   </div>
-  <div class="stat-card medium">
-    <div class="num">{{ medium_count }}</div>
-    <div class="label">Medium Bugs Open</div>
+  <div class="ring-card medium" style="--ring-color: var(--medium); --ring-pct: {{ medium_pct }};">
+    <div class="ring"><div class="ring-inner">{{ medium_pct }}%</div></div>
+    <div>
+      <div class="ring-label">{{ medium_count }} Medium</div>
+      <div class="ring-sub">Bugs open</div>
+    </div>
   </div>
-  <div class="stat-card low">
-    <div class="num">{{ low_count }}</div>
-    <div class="label">Low Bugs Open</div>
+  <div class="ring-card low" style="--ring-color: var(--low); --ring-pct: {{ low_pct }};">
+    <div class="ring"><div class="ring-inner">{{ low_pct }}%</div></div>
+    <div>
+      <div class="ring-label">{{ low_count }} Low</div>
+      <div class="ring-sub">Bugs open</div>
+    </div>
   </div>
 </div>
 
-<div class="card">
-  <h2>Recent Bug Reports</h2>
-  {% if recent %}
-  <table>
-    <tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th></tr>
-    {% for r in recent %}
-    <tr>
-      <td>{{ r.id }}</td>
-      <td><a href="{{ url_for('bug_detail', report_id=r.id) }}">{{ r.title }}</a></td>
-      <td><span class="badge {{ r.severity|lower }}">{{ r.severity }}</span></td>
-      <td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
-    </tr>
-    {% endfor %}
-  </table>
-  {% else %}
-  <p class="muted">No bug reports yet. Submit your first bug to see it here.</p>
-  {% endif %}
+<div class="grid-2" style="align-items:start;">
+
+  <div class="card">
+    <h2>Recent Bug Reports</h2>
+    {% if recent %}
+    <table>
+      <tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th></tr>
+      {% for r in recent %}
+      <tr>
+        <td>{{ r.id }}</td>
+        <td><a href="{{ url_for('bug_detail', report_id=r.id) }}">{{ r.title }}</a></td>
+        <td><span class="badge {{ r.severity|lower }}">{{ r.severity }}</span></td>
+        <td><span class="status-badge {{ r.status|lower|replace(' ', '-') }}">{{ r.status }}</span></td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No bug reports yet. Submit your first bug to see it here.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Recent Screenshots</h2>
+    {% if recent_screenshots %}
+    <div class="screenshot-grid">
+      {% for r in recent_screenshots %}
+      <a href="{{ url_for('bug_detail', report_id=r.id) }}">
+        <img src="{{ url_for('static', filename=r.screenshot_path) }}" alt="{{ r.title }}">
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="muted">No screenshots attached yet. Bugs submitted with a screenshot will show up here.</p>
+    {% endif %}
+  </div>
+
 </div>
 
 {% if latest_critical %}

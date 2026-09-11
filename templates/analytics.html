@@ -29,15 +29,15 @@
     <h2>Average Resolution Time by Severity</h2>
     <div class="stat-grid" style="margin-bottom:0;">
       <div class="stat-card critical">
-        <div class="num">{{ avg_resolution['Critical'] if avg_resolution['Critical'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Critical'] is not none }}</div>
+        <div class="num">{{ avg_resolution['Critical'] if avg_resolution['Critical'] is not none else 'None' }}{{ ' hrs' if avg_resolution['Critical'] is not none }}</div>
         <div class="label">Critical</div>
       </div>
       <div class="stat-card medium">
-        <div class="num">{{ avg_resolution['Medium'] if avg_resolution['Medium'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Medium'] is not none }}</div>
+        <div class="num">{{ avg_resolution['Medium'] if avg_resolution['Medium'] is not none else 'None' }}{{ ' hrs' if avg_resolution['Medium'] is not none }}</div>
         <div class="label">Medium</div>
       </div>
       <div class="stat-card low">
-        <div class="num">{{ avg_resolution['Low'] if avg_resolution['Low'] is not none else '&mdash;' }}{{ ' hrs' if avg_resolution['Low'] is not none }}</div>
+        <div class="num">{{ avg_resolution['Low'] if avg_resolution['Low'] is not none else 'None' }}{{ ' hrs' if avg_resolution['Low'] is not none }}</div>
         <div class="label">Low</div>
       </div>
     </div>

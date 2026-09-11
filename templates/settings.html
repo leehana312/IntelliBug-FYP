@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "icons.html" as icons %}
 {% block title %}Settings{% endblock %}
 {% block page_title %}Settings{% endblock %}
 {% block page_sub %}Account, profile, and appearance{% endblock %}
@@ -9,7 +10,22 @@
 
   <div class="card">
     <h2>Account Settings</h2>
-    <form method="POST" action="{{ url_for('settings') }}">
+    <form method="POST" action="{{ url_for('settings') }}" enctype="multipart/form-data">
+
+      <div class="avatar-upload-row">
+        {% if current_user.avatar_url %}
+          <img src="{{ current_user.avatar_url }}" alt="" class="avatar-preview-lg" id="avatar-preview">
+        {% else %}
+          <div class="avatar-preview-fallback" id="avatar-preview-fallback">{{ icons.user() }}</div>
+          <img src="" alt="" class="avatar-preview-lg" id="avatar-preview" hidden>
+        {% endif %}
+        <div>
+          <label class="upload-btn" for="profile_picture">Change photo</label>
+          <input type="file" id="profile_picture" name="profile_picture" accept="image/*" hidden>
+          <p class="muted" style="margin-top:6px; font-size:11px;">PNG or JPG, square photos look best.</p>
+        </div>
+      </div>
+
       <div class="form-row">
         <label for="full_name">Full Name</label>
         <input type="text" id="full_name" name="full_name" value="{{ current_user.full_name }}">
@@ -22,11 +38,7 @@
 
       <div class="form-row">
         <label for="role">Role</label>
-        <select id="role" name="role">
-          {% for option in ["QA Engineer", "Developer", "Admin"] %}
-          <option value="{{ option }}" {{ 'selected' if current_user.role == option }}>{{ option }}</option>
-          {% endfor %}
-        </select>
+        <input type="text" id="role" name="role" value="{{ current_user.role }}" placeholder="e.g. QA Engineer, Developer, Admin">
       </div>
 
       <div class="form-row">
@@ -69,17 +81,31 @@
       const value = btn.dataset.themeValue;
       settingsThemeButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       let applied = value;
       if (value === 'system') {
         applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       document.documentElement.setAttribute('data-theme', applied);
-
       const formData = new FormData();
       formData.append('theme', value);
       await fetch("{{ url_for('set_theme') }}", { method: 'POST', body: formData });
     });
+  });
+
+  // Live preview when a new photo is chosen, before saving.
+  const photoInput = document.getElementById('profile_picture');
+  const preview = document.getElementById('avatar-preview');
+  const fallback = document.getElementById('avatar-preview-fallback');
+  photoInput.addEventListener('change', () => {
+    const file = photoInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      preview.src = e.target.result;
+      preview.hidden = false;
+      if (fallback) fallback.hidden = true;
+    };
+    reader.readAsDataURL(file);
   });
 </script>
 {% endblock %}

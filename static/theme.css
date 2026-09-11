@@ -294,27 +294,58 @@ a { color: inherit; }
   .auth-illustration { border-radius: 20px 20px 0 0; }
 }
 
+.flash-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
 .flash {
   background: var(--critical-bg);
   color: var(--critical);
   font-size: 13px;
-  padding: 8px 12px;
-  border-radius: 5px;
-  margin-bottom: 16px;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: flashIn 0.2s ease-out;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
+
+.flash.flash-hide {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@keyframes flashIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Category colors. flash-error falls back to the same red as
+   the default, since most existing flashes are errors. */
+.flash-success { background: var(--low-bg); color: var(--low); }
+.flash-error { background: var(--critical-bg); color: var(--critical); }
+.flash-warning { background: var(--medium-bg); color: var(--medium); }
+.flash-info { background: var(--status-progress-bg); color: var(--status-progress); }
 
 /* ---------- Shell layout (sidebar + main) ---------- */
 
 .shell { display: flex; min-height: 100vh; }
 
 .sidebar {
-  width: 220px;
-  background: var(--coffee);
+  width: 240px;
+  background: linear-gradient(180deg, var(--coffee) 0%, var(--coffee-dark) 100%);
   color: var(--ivory);
   padding: 22px 0;
   flex-shrink: 0;
   transition: width 0.2s ease, padding 0.2s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.collapsed {
@@ -323,33 +354,95 @@ a { color: inherit; }
   padding-right: 0;
 }
 
-.sidebar .brand {
-  font-weight: 700;
-  font-size: 16px;
-  padding: 0 22px 22px;
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 20px 20px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
   margin-bottom: 14px;
   white-space: nowrap;
 }
 
+.avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.25);
+  flex-shrink: 0;
+}
+
+.avatar-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-profile-text { overflow: hidden; }
+.sidebar-profile-name {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-profile-role {
+  font-size: 11px;
+  color: #cdbba5;
+  margin-top: 1px;
+}
+
+.sidebar nav { flex: 1; }
+
 .sidebar nav a {
-  display: block;
-  padding: 10px 22px;
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  margin: 2px 10px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
   text-decoration: none;
   color: #e3d5c4;
-  border-left: 3px solid transparent;
   white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
 }
+
+.sidebar nav a svg { flex-shrink: 0; opacity: 0.85; }
 
 .sidebar nav a.active {
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.14);
   color: #fff;
-  border-left-color: var(--ivory);
   font-weight: 600;
 }
+.sidebar nav a.active svg { opacity: 1; }
 
-.sidebar nav a:hover { color: #fff; }
+.sidebar nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  margin: 10px 10px 0;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  color: #e3d5c4;
+  white-space: nowrap;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 16px;
+}
+.sidebar-logout:hover { color: #fff; }
 
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
@@ -362,11 +455,31 @@ a { color: inherit; }
   align-items: center;
 }
 
-.topbar .page-title { font-size: 18px; font-weight: 700; }
+.topbar .page-title { font-size: 20px; font-weight: 700; }
 .topbar .page-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
-.user-menu { font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:10px; }
+.user-menu { font-size: 13px; color: var(--text-muted); display:flex; align-items:center; gap:14px; }
 .user-menu a { color: var(--coffee); font-weight: 600; text-decoration: none; }
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 14px;
+  color: var(--text-muted);
+}
+.topbar-search input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 13px;
+  width: 160px;
+}
+.topbar-search input:focus { outline: none; }
+.topbar-search svg { flex-shrink: 0; }
 
 .content {
   padding: 26px 28px;
@@ -611,3 +724,132 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   margin: 3px 4px 0 0;
 }
 .back-link { font-size: 13px; color: var(--coffee); text-decoration: none; margin-bottom: 12px; display: inline-block; }
+
+/* ---------- Circular progress rings (dashboard stat cards) ---------- */
+
+.ring-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-radius: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+}
+.ring-card.critical { background: var(--critical-bg); }
+.ring-card.medium { background: var(--medium-bg); }
+.ring-card.low { background: var(--low-bg); }
+
+.ring {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring-color) calc(var(--ring-pct) * 1%), rgba(0,0,0,0.08) 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ring-inner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--ivory-panel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ring-color);
+}
+.ring-card .ring-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ring-card .ring-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ---------- Upload dropzone (screenshots, avatars) ---------- */
+
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 26px;
+  text-align: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  font-size: 13px;
+}
+.dropzone:hover, .dropzone.dragover {
+  border-color: var(--coffee-light);
+  background: var(--ivory);
+}
+.dropzone svg { color: var(--coffee-light); margin-bottom: 8px; }
+.dropzone .dz-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.dropzone img.preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ---------- Avatar upload (settings page) ---------- */
+
+.avatar-upload-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.avatar-upload-row .avatar-preview-lg {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+.avatar-upload-row .avatar-preview-fallback {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--ivory);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+.avatar-upload-row label.upload-btn {
+  display: inline-block;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  color: var(--coffee);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.avatar-upload-row label.upload-btn:hover { background: var(--border); }
+
+/* Bug screenshot thumbnails grid (dashboard / detail page) */
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.screenshot-grid img {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}

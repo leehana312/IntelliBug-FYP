@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "icons.html" as icons %}
 {% block title %}Submit Bug{% endblock %}
 {% block page_title %}Submit New Bug Report{% endblock %}
 {% block page_sub %}Severity is predicted automatically. You do not choose it here.{% endblock %}
@@ -8,7 +9,7 @@
 <div class="grid-2" style="grid-template-columns: 2fr 1fr; align-items: start;">
 
   <div class="card">
-    <form id="bug-form">
+    <form id="bug-form" enctype="multipart/form-data">
       <div class="form-row">
         <label for="title">Bug Title</label>
         <input type="text" id="title" name="title" placeholder="e.g. Login button unresponsive on Safari" required>
@@ -26,13 +27,19 @@
       </div>
 
       <div class="form-row">
-        <label for="steps">Steps to Reproduce</label>
-        <textarea id="steps" name="steps" rows="3" placeholder="1. Open login page 2. Enter valid credentials 3. Click Submit"></textarea>
+        <label for="description">Bug Description</label>
+        <textarea id="description" name="description" rows="5" placeholder="Expected: user reaches dashboard. Actual: page reloads to blank login form." required></textarea>
       </div>
 
       <div class="form-row">
-        <label for="description">Bug Description</label>
-        <textarea id="description" name="description" rows="5" placeholder="Expected: user reaches dashboard. Actual: page reloads to blank login form." required></textarea>
+        <label>Screenshot of the Issue</label>
+        <div class="dropzone" id="dropzone">
+          {{ icons.camera() }}
+          <div>Click to browse, drag a file here, or paste a screenshot</div>
+          <div class="dz-hint">PNG, JPG, or GIF</div>
+          <img id="screenshot-preview" class="preview" hidden>
+        </div>
+        <input type="file" id="screenshot-input" name="screenshot" accept="image/*" hidden>
       </div>
 
       <button type="submit" id="submit-btn">Submit Report</button>

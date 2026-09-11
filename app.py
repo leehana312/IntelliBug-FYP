@@ -16,6 +16,7 @@ Then open your browser to:
 
 import re
 import os
+import uuid
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -24,6 +25,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for, f
 from flask_login import (
     LoginManager, login_user, logout_user, login_required, current_user
 )
+from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from xgboost import XGBClassifier
 from dotenv import load_dotenv
@@ -35,6 +37,40 @@ load_dotenv()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-key-change-this")
+
+# ---------------------------------------------------------
+# Upload folders, for profile pictures and bug screenshots.
+# Both live under static/ so Flask can serve them directly
+# at /static/uploads/... without a separate route.
+# ---------------------------------------------------------
+AVATAR_UPLOAD_DIR = os.path.join(app.static_folder, "uploads", "avatars")
+SCREENSHOT_UPLOAD_DIR = os.path.join(app.static_folder, "uploads", "screenshots")
+os.makedirs(AVATAR_UPLOAD_DIR, exist_ok=True)
+os.makedirs(SCREENSHOT_UPLOAD_DIR, exist_ok=True)
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp"}
+
+
+def allowed_image(filename):
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_IMAGE_EXTENSIONS
+
+
+def save_uploaded_image(file_storage, upload_dir):
+    """
+    Saves an uploaded image with a random filename, so two people
+    uploading a file called screenshot.png don't overwrite each
+    other. Returns the relative static path to store in the
+    database, or None if there was no valid file.
+    """
+    if not file_storage or file_storage.filename == "":
+        return None
+    if not allowed_image(file_storage.filename):
+        return None
+
+    ext = secure_filename(file_storage.filename).rsplit(".", 1)[1].lower()
+    new_filename = f"{uuid.uuid4().hex}.{ext}"
+    file_storage.save(os.path.join(upload_dir, new_filename))
+    folder_name = os.path.basename(upload_dir)
+    return f"uploads/{folder_name}/{new_filename}"
 
 # ---------------------------------------------------------
 # Database connection
@@ -143,7 +179,7 @@ def auth_google_callback():
     user_info = token.get("userinfo")
 
     if not user_info or not user_info.get("email"):
-        flash("Google sign-in failed. Please try again.")
+        flash("Google sign-in failed. Please try again.", "error")
         return redirect(url_for("login"))
 
     google_id = user_info["sub"]
@@ -190,8 +226,16 @@ def dashboard():
     critical_count = BugReport.query.filter_by(severity="Critical", status="Open").count()
     medium_count = BugReport.query.filter_by(severity="Medium", status="Open").count()
     low_count = BugReport.query.filter_by(severity="Low", status="Open").count()
+    total_open = critical_count + medium_count + low_count
 
     recent = BugReport.query.order_by(BugReport.created_at.desc()).limit(5).all()
+
+    recent_screenshots = (
+        BugReport.query.filter(BugReport.screenshot_path.isnot(None))
+        .order_by(BugReport.created_at.desc())
+        .limit(4)
+        .all()
+    )
 
     latest_critical = (
         BugReport.query.filter_by(severity="Critical")
@@ -199,12 +243,19 @@ def dashboard():
         .first()
     )
 
+    def pct(count):
+        return round((count / total_open) * 100) if total_open else 0
+
     return render_template(
         "dashboard.html",
         critical_count=critical_count,
         medium_count=medium_count,
         low_count=low_count,
+        critical_pct=pct(critical_count),
+        medium_pct=pct(medium_count),
+        low_pct=pct(low_count),
         recent=recent,
+        recent_screenshots=recent_screenshots,
         latest_critical=latest_critical,
     )
 
@@ -225,10 +276,12 @@ def classify():
     description = request.form.get("description", "").strip()
     product = request.form.get("product", "").strip()
     environment = request.form.get("environment", "").strip()
-    steps = request.form.get("steps", "").strip()
 
     if not title or not description:
         return jsonify({"error": "Please fill in both the title and description."}), 400
+
+    screenshot = request.files.get("screenshot")
+    screenshot_path = save_uploaded_image(screenshot, SCREENSHOT_UPLOAD_DIR)
 
     combined_text = clean_text(title + " " + description)
     features = vectorizer.transform([combined_text])
@@ -242,7 +295,7 @@ def classify():
         description=description,
         product=product,
         environment=environment,
-        steps_to_reproduce=steps,
+        screenshot_path=screenshot_path,
         severity=severity,
         recommendation=recommendation,
         status="Open",
@@ -294,7 +347,7 @@ def bug_reports():
 def bug_detail(report_id):
     report = db.session.get(BugReport, report_id)
     if report is None:
-        flash("Bug report not found.")
+        flash("Bug report not found.", "error")
         return redirect(url_for("bug_reports"))
 
     # Recompute which words in this bug's text carried the most
@@ -397,10 +450,16 @@ def settings():
     if request.method == "POST":
         current_user.full_name = request.form.get("full_name", current_user.full_name).strip()
         current_user.profession = request.form.get("profession", current_user.profession)
-        current_user.role = request.form.get("role", current_user.role)
+        current_user.role = request.form.get("role", current_user.role).strip()
         current_user.theme = request.form.get("theme", current_user.theme)
+
+        photo = request.files.get("profile_picture")
+        saved_path = save_uploaded_image(photo, AVATAR_UPLOAD_DIR)
+        if saved_path:
+            current_user.avatar_url = url_for("static", filename=saved_path)
+
         db.session.commit()
-        flash("Changes saved.")
+        flash("Changes saved.", "success")
         return redirect(url_for("settings"))
 
     return render_template("settings.html")

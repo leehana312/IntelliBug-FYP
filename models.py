@@ -48,6 +48,7 @@ class BugReport(db.Model):
     severity = db.Column(db.String(20), nullable=False)
     recommendation = db.Column(db.Text)
     status = db.Column(db.String(20), default="Open")
+    screenshot_path = db.Column(db.String(300), nullable=True)
 
     reported_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

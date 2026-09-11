@@ -6,9 +6,6 @@
 <title>IntelliBug &mdash; {% block title %}Dashboard{% endblock %}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 <script>
-  // Runs before the page paints, so there's no flash of the wrong
-  // theme. If the user's saved preference is "system", check the
-  // OS setting directly, since the server doesn't know that.
   (function() {
     const saved = document.documentElement.getAttribute('data-theme');
     if (saved === 'system') {
@@ -19,17 +16,31 @@
 </script>
 </head>
 <body>
+{% import "icons.html" as icons %}
 <div class="shell">
 
   <aside class="sidebar" id="sidebar">
-    <div class="brand">IntelliBug</div>
+    <div class="sidebar-profile">
+      {% if current_user.avatar_url %}
+        <img src="{{ current_user.avatar_url }}" alt="" class="avatar-img">
+      {% else %}
+        <div class="avatar-fallback">{{ icons.user() }}</div>
+      {% endif %}
+      <div class="sidebar-profile-text">
+        <div class="sidebar-profile-name">{{ current_user.full_name }}</div>
+        <div class="sidebar-profile-role">{{ current_user.role }}</div>
+      </div>
+    </div>
+
     <nav>
-      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">Dashboard</a>
-      <a href="{{ url_for('submit_bug_page') }}" class="{{ 'active' if request.endpoint == 'submit_bug_page' }}">Submit Bug</a>
-      <a href="{{ url_for('bug_reports') }}" class="{{ 'active' if request.endpoint in ['bug_reports', 'bug_detail'] }}">Bug Reports</a>
-      <a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint == 'analytics' }}">Analytics</a>
-      <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">Settings</a>
+      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">{{ icons.dashboard() }}<span>Dashboard</span></a>
+      <a href="{{ url_for('submit_bug_page') }}" class="{{ 'active' if request.endpoint == 'submit_bug_page' }}">{{ icons.submit() }}<span>Submit Bug</span></a>
+      <a href="{{ url_for('bug_reports') }}" class="{{ 'active' if request.endpoint in ['bug_reports', 'bug_detail'] }}">{{ icons.reports() }}<span>Bug Reports</span></a>
+      <a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint == 'analytics' }}">{{ icons.analytics() }}<span>Analytics</span></a>
+      <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">{{ icons.settings() }}<span>Settings</span></a>
     </nav>
+
+    <a href="{{ url_for('logout') }}" class="sidebar-logout">{{ icons.logout() }}<span>Log out</span></a>
   </aside>
 
   <div class="main">
@@ -42,20 +53,26 @@
         </div>
       </div>
       <div class="user-menu">
+        <form class="topbar-search" action="{{ url_for('bug_reports') }}" method="GET">
+          {{ icons.search() }}
+          <input type="text" name="q" placeholder="Search bugs...">
+        </form>
         <div class="theme-toggle" id="theme-toggle">
           <button data-theme-value="light" title="Light">&#9728;</button>
           <button data-theme-value="dark" title="Dark">&#9789;</button>
           <button data-theme-value="system" title="System">&#9881;</button>
         </div>
-        {{ current_user.full_name }} &middot; {{ current_user.role }}
-        <a href="#" id="logout-link">Log out</a>
       </div>
     </div>
 
     <div class="content">
-      {% with messages = get_flashed_messages() %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="flash">{{ messages[0] }}</div>
+          <div class="flash-stack">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
         {% endif %}
       {% endwith %}
       {% block content %}{% endblock %}
@@ -65,7 +82,6 @@
 </div>
 
 <script>
-  // Sidebar collapse, remembered per browser via localStorage.
   const sidebar = document.getElementById('sidebar');
   const toggleBtn = document.getElementById('sidebar-toggle');
   if (localStorage.getItem('sidebarCollapsed') === 'true') {
@@ -76,7 +92,6 @@
     localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
   });
 
-  // Theme toggle buttons, saves to your account via /theme.
   const themeButtons = document.querySelectorAll('#theme-toggle button');
   const savedTheme = "{{ current_user.theme if current_user.is_authenticated else 'system' }}";
   themeButtons.forEach(btn => {
@@ -85,25 +100,23 @@
       const value = btn.dataset.themeValue;
       themeButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
       let applied = value;
       if (value === 'system') {
         applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
       document.documentElement.setAttribute('data-theme', applied);
-
       const formData = new FormData();
       formData.append('theme', value);
       await fetch("{{ url_for('set_theme') }}", { method: 'POST', body: formData });
     });
   });
 
-  // Logout confirmation, avoids an accidental click ending the session.
-  document.getElementById('logout-link').addEventListener('click', (e) => {
-    e.preventDefault();
-    if (confirm('Log out of IntelliBug?')) {
-      window.location.href = "{{ url_for('logout') }}";
-    }
+  // Auto-dismiss flash messages after 3 seconds.
+  document.querySelectorAll('.flash').forEach(el => {
+    setTimeout(() => {
+      el.classList.add('flash-hide');
+      setTimeout(() => el.remove(), 300);
+    }, 3000);
   });
 </script>
 

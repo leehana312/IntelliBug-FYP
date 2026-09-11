@@ -17,11 +17,6 @@
   <div class="card">
     <h2>{{ report.title }}</h2>
 
-    {% if report.steps_to_reproduce %}
-    <p class="muted" style="text-transform:uppercase; font-size:11px; margin-top:16px;">Steps to Reproduce</p>
-    <p>{{ report.steps_to_reproduce }}</p>
-    {% endif %}
-
     {% if report.environment %}
     <p class="muted" style="text-transform:uppercase; font-size:11px; margin-top:16px;">Environment</p>
     <p>{{ report.environment }}</p>
@@ -29,6 +24,11 @@
 
     <p class="muted" style="text-transform:uppercase; font-size:11px; margin-top:16px;">Bug Description</p>
     <p>{{ report.description }}</p>
+
+    {% if report.screenshot_path %}
+    <p class="muted" style="text-transform:uppercase; font-size:11px; margin-top:16px;">Screenshot</p>
+    <img src="{{ url_for('static', filename=report.screenshot_path) }}" alt="Bug screenshot" style="max-width:100%; border-radius:8px; border:1px solid var(--border); margin-top:6px;">
+    {% endif %}
 
     {% if top_terms %}
     <p class="muted" style="text-transform:uppercase; font-size:11px; margin-top:16px;">TF-IDF Top Contributing Terms</p>

@@ -46,9 +46,13 @@
       <h2>Welcome to IntelliBug</h2>
       <p class="sub">Sign in with your Google account to continue</p>
 
-      {% with messages = get_flashed_messages() %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-          <div class="flash">{{ messages[0] }}</div>
+          <div class="flash-stack">
+            {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
         {% endif %}
       {% endwith %}
 
@@ -62,9 +66,18 @@
         Sign in with Google
       </a>
 
+      <p class="terms-link" style="margin-top:22px;"><a href="#">Terms and Services</a></p>
     </div>
 
   </div>
 </div>
+<script>
+  document.querySelectorAll('.flash').forEach(el => {
+    setTimeout(() => {
+      el.classList.add('flash-hide');
+      setTimeout(() => el.remove(), 300);
+    }, 5000);
+  });
+</script>
 </body>
 </html>
