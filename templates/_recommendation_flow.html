@@ -1,0 +1,42 @@
+{% import "icons.html" as icons %}
+{#
+  Renders the AI recommendation as a connected flow diagram instead
+  of a paragraph: Root Cause -> Suggested Fix -> Best Practice.
+  Expects `rec`, a dict with root_cause, suggested_fix, best_practice.
+  Older bugs saved before this format only have suggested_fix filled,
+  root_cause and best_practice come through empty and that step
+  is skipped rather than shown blank.
+#}
+<div class="rec-flow">
+
+  {% if rec.root_cause %}
+  <div class="rec-step">
+    <div class="rec-step-icon root-cause">{{ icons.target() }}</div>
+    <div class="rec-step-body">
+      <div class="rec-step-label">Root Cause</div>
+      <div class="rec-step-text">{{ rec.root_cause }}</div>
+    </div>
+  </div>
+  <div class="rec-arrow">&#8595;</div>
+  {% endif %}
+
+  <div class="rec-step">
+    <div class="rec-step-icon fix">{{ icons.wrench() }}</div>
+    <div class="rec-step-body">
+      <div class="rec-step-label">Suggested Fix</div>
+      <div class="rec-step-text">{{ rec.suggested_fix }}</div>
+    </div>
+  </div>
+
+  {% if rec.best_practice %}
+  <div class="rec-arrow">&#8595;</div>
+  <div class="rec-step">
+    <div class="rec-step-icon best-practice">{{ icons.shield() }}</div>
+    <div class="rec-step-body">
+      <div class="rec-step-label">Best Practice</div>
+      <div class="rec-step-text">{{ rec.best_practice }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>

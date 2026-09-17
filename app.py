@@ -17,6 +17,7 @@ Then open your browser to:
 import re
 import os
 import uuid
+import json
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -135,13 +136,23 @@ def clean_text(text):
 
 
 def get_recommendation(title, description, severity):
+    """
+    Asks Claude for a structured recommendation instead of one
+    paragraph, so it can be rendered as a diagram (root cause,
+    fix, best practice) rather than a wall of text. Returns a
+    JSON string, stored as-is in the database, parsed back into
+    its three parts wherever it's displayed.
+    """
     prompt = f"""A bug was reported with the following details:
 
 Title: {title}
 Description: {description}
 Predicted severity: {severity}
 
-Suggest a brief, practical fix or next step for a developer to investigate this bug. Keep it to 2-3 sentences. Do not repeat the bug details back, just give the recommendation."""
+Respond with ONLY a JSON object, no other text, no markdown code fences, in exactly this shape:
+{{"root_cause": "one short sentence on the likely root cause", "suggested_fix": "one short sentence on the concrete fix", "best_practice": "one short sentence on how to prevent this in future"}}
+
+Each value should be a single short sentence, plain text, no repeating the bug title or description back."""
     try:
         message = claude_client.messages.create(
             model="claude-sonnet-4-6",
@@ -150,11 +161,42 @@ Suggest a brief, practical fix or next step for a developer to investigate this 
         )
         for block in message.content:
             if block.type == "text":
-                return block.text.strip()
-        return "Claude did not return a text response."
+                raw = block.text.strip()
+                # Claude sometimes wraps JSON in markdown fences
+                # despite being asked not to. Strip those if present.
+                raw = re.sub(r"^```(json)?|```$", "", raw.strip(), flags=re.MULTILINE).strip()
+                parsed = json.loads(raw)
+                return json.dumps({
+                    "root_cause": parsed.get("root_cause", "").strip(),
+                    "suggested_fix": parsed.get("suggested_fix", "").strip(),
+                    "best_practice": parsed.get("best_practice", "").strip(),
+                })
+        return json.dumps({"root_cause": "", "suggested_fix": "Claude did not return a response.", "best_practice": ""})
     except Exception as e:
-        print("Claude API error:", e)
-        return "Recommendation unavailable right now. The severity prediction above is still valid."
+        print("Claude API error or bad JSON:", e)
+        return json.dumps({
+            "root_cause": "",
+            "suggested_fix": "Recommendation unavailable right now. The severity prediction above is still valid.",
+            "best_practice": "",
+        })
+
+
+def parse_recommendation(raw):
+    """
+    Turns a stored recommendation string back into its three parts
+    for display. Handles two older cases gracefully: bugs saved
+    before this structured format existed just have a plain
+    sentence, not JSON, so those fall back to showing that single
+    sentence as the "suggested_fix" step with the other two boxes
+    left empty, rather than crashing.
+    """
+    try:
+        data = json.loads(raw)
+        if isinstance(data, dict) and "suggested_fix" in data:
+            return data
+    except (json.JSONDecodeError, TypeError):
+        pass
+    return {"root_cause": "", "suggested_fix": raw or "No recommendation available.", "best_practice": ""}
 
 
 # ---------------------------------------------------------
@@ -203,7 +245,12 @@ def auth_google_callback():
         db.session.add(user)
     else:
         user.google_id = google_id
-        user.avatar_url = avatar_url
+        # Only take Google's photo if the user hasn't uploaded their
+        # own picture in Settings. A custom upload is saved under
+        # /static/uploads/avatars/, Google's own photo URLs never
+        # look like that, so this tells the two apart.
+        if not user.avatar_url or not user.avatar_url.startswith("/static/uploads/avatars/"):
+            user.avatar_url = avatar_url
 
     db.session.commit()
     login_user(user)
@@ -242,6 +289,7 @@ def dashboard():
         .order_by(BugReport.created_at.desc())
         .first()
     )
+    latest_critical_rec = parse_recommendation(latest_critical.recommendation) if latest_critical else None
 
     def pct(count):
         return round((count / total_open) * 100) if total_open else 0
@@ -257,6 +305,7 @@ def dashboard():
         recent=recent,
         recent_screenshots=recent_screenshots,
         latest_critical=latest_critical,
+        latest_critical_rec=latest_critical_rec,
     )
 
 
@@ -308,7 +357,7 @@ def classify():
         "id": report.id,
         "title": title,
         "severity": severity,
-        "recommendation": recommendation,
+        "recommendation": parse_recommendation(recommendation),
     })
 
 
@@ -360,7 +409,9 @@ def bug_detail(report_id):
     top_indices = row.argsort()[::-1][:6]
     top_terms = [feature_names[i] for i in top_indices if row[i] > 0]
 
-    return render_template("bug_detail.html", report=report, top_terms=top_terms)
+    rec = parse_recommendation(report.recommendation)
+
+    return render_template("bug_detail.html", report=report, top_terms=top_terms, rec=rec)
 
 
 @app.route("/reports/<int:report_id>/status", methods=["POST"])

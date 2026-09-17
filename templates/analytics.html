@@ -46,7 +46,6 @@
 
   <div class="card">
     <h2>Model Performance (XGBoost)</h2>
-    <p class="muted" style="margin-bottom:14px;">From Phase 5 evaluation on the test set, not live data.</p>
     {% for label, value in [('Accuracy', model_performance.accuracy), ('Precision', model_performance.precision), ('Recall', model_performance.recall), ('F1-score', model_performance.f1)] %}
     <div style="margin-bottom:10px;">
       <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">

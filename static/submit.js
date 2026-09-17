@@ -2,7 +2,31 @@ const form = document.getElementById("bug-form");
 const submitBtn = document.getElementById("submit-btn");
 const resultPanel = document.getElementById("result-panel");
 const severityBadge = document.getElementById("severity-badge");
-const recommendationText = document.getElementById("recommendation-text");
+const recommendationFlow = document.getElementById("recommendation-flow");
+
+// Matches the icons used in templates/icons.html, kept as plain
+// SVG strings here since this file can't use Jinja macros.
+const REC_ICONS = {
+  root_cause: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>',
+  suggested_fix: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+  best_practice: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>',
+};
+const REC_LABELS = { root_cause: "Root Cause", suggested_fix: "Suggested Fix", best_practice: "Best Practice" };
+const REC_CLASS = { root_cause: "root-cause", suggested_fix: "fix", best_practice: "best-practice" };
+
+function renderRecommendationFlow(rec) {
+  const steps = ["root_cause", "suggested_fix", "best_practice"].filter(key => rec[key]);
+  recommendationFlow.innerHTML = steps.map((key, i) => {
+    const arrow = i > 0 ? '<div class="rec-arrow">&#8595;</div>' : "";
+    return `${arrow}<div class="rec-step">
+      <div class="rec-step-icon ${REC_CLASS[key]}">${REC_ICONS[key]}</div>
+      <div class="rec-step-body">
+        <div class="rec-step-label">${REC_LABELS[key]}</div>
+        <div class="rec-step-text">${rec[key]}</div>
+      </div>
+    </div>`;
+  }).join("");
+}
 const errorMsg = document.getElementById("error-msg");
 
 const dropzone = document.getElementById("dropzone");
@@ -87,7 +111,7 @@ form.addEventListener("submit", async (e) => {
 
     severityBadge.textContent = data.severity;
     severityBadge.className = "badge " + data.severity.toLowerCase();
-    recommendationText.textContent = data.recommendation;
+    renderRecommendationFlow(data.recommendation);
     resultPanel.hidden = false;
     form.reset();
     screenshotPreview.hidden = true;

@@ -72,7 +72,8 @@
   <h2>AI Solution Recommendation &mdash; Claude AI</h2>
   <p class="muted">Bug #{{ latest_critical.id }} &middot; {{ latest_critical.title }}</p>
   <span class="badge critical">Critical</span>
-  <div class="recommendation-box">{{ latest_critical.recommendation }}</div>
+  {% set rec = latest_critical_rec %}
+  {% include "_recommendation_flow.html" %}
 </div>
 {% endif %}
 
