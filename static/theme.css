@@ -1,9 +1,3 @@
-/* IntelliBug — Coffee Bean & Ivory Mist theme
-   Warm, editorial admin-dashboard palette rather than a
-   generic blue SaaS kit. Coffee bean carries structure
-   (sidebar, headings, primary actions), ivory mist is the
-   working surface everything sits on. */
-
 :root {
   --coffee: #6e4e37;
   --coffee-dark: #4f3627;
@@ -336,127 +330,310 @@ a { color: inherit; }
 .flash-warning { background: var(--medium-bg); color: var(--medium); }
 .flash-info { background: var(--status-progress-bg); color: var(--status-progress); }
 
-/* ---------- Shell layout (sidebar + main) ---------- */
+/* ---------- Shell layout: floating glass rail + inset page ---------- */
 
-.shell { display: flex; min-height: 100vh; }
+/* Rail colours are separate from --coffee so the rail stays dark
+   brown in dark mode too, instead of flipping to light tan. */
+:root {
+  --rail-top: #a3825f;
+  --rail-mid: #6e4e37;
+  --rail-bottom: #2e2016;
+  --rail-r: 22px;            /* radius of the concave notch beside the active pill */
+}
+html[data-theme="dark"] {
+  --rail-top: #7d5f46;
+  --rail-mid: #4f3627;
+  --rail-bottom: #1e130d;
+}
+
+body.app {
+  height: 100vh;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 50% at 50% -8%, rgba(163,130,95,0.28), transparent 70%),
+    #1a110b;
+}
+
+.shell {
+  display: flex;
+  height: 100%;
+  border-radius: 32px;
+  background:
+    radial-gradient(90% 45% at 22% 0%, rgba(255,255,255,0.16), transparent 62%),
+    linear-gradient(180deg, var(--rail-top) 0%, var(--rail-mid) 38%, var(--rail-bottom) 100%);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 30px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.14);
+  overflow: hidden;
+  position: relative;
+}
 
 .sidebar {
-  width: 240px;
-  background: linear-gradient(180deg, var(--coffee) 0%, var(--coffee-dark) 100%);
-  color: var(--ivory);
-  padding: 22px 0;
+  width: 250px;
   flex-shrink: 0;
-  transition: width 0.2s ease, padding 0.2s ease;
-  overflow: hidden;
+  padding: 16px 0 16px 14px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: width 0.25s ease;
+  color: #fff;
+}
+html[data-rail="collapsed"] .sidebar { width: 88px; }
+
+/* tiny stars in the upper part of the rail */
+.sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 42%;
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(1.3px 1.3px at 18% 12%, rgba(255,255,255,0.9), transparent 100%),
+    radial-gradient(1px 1px at 70% 8%, rgba(255,255,255,0.7), transparent 100%),
+    radial-gradient(1.6px 1.6px at 88% 22%, rgba(255,255,255,0.85), transparent 100%),
+    radial-gradient(1px 1px at 40% 30%, rgba(255,255,255,0.6), transparent 100%),
+    radial-gradient(1.2px 1.2px at 8% 46%, rgba(255,255,255,0.7), transparent 100%),
+    radial-gradient(1px 1px at 62% 58%, rgba(255,255,255,0.55), transparent 100%),
+    radial-gradient(1.4px 1.4px at 30% 78%, rgba(255,255,255,0.7), transparent 100%);
 }
 
-.sidebar.collapsed {
-  width: 0;
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.sidebar-profile {
+/* header: round logo badge, brand name, collapse chevron */
+.rail-head {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 0 20px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.12);
-  margin-bottom: 14px;
-  white-space: nowrap;
+  gap: 10px;
+  padding-right: 14px;
+  margin-bottom: 22px;
+  height: 46px;
 }
+
+.rail-badge {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  padding: 0;
+  margin: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.28);
+  background: linear-gradient(160deg, rgba(255,255,255,0.28), rgba(255,255,255,0.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 4px 14px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.rail-badge::after { display: none; }
+.rail-badge:hover { transform: none; background: linear-gradient(160deg, rgba(255,255,255,0.36), rgba(255,255,255,0.12)); }
+.rail-badge img { width: 28px; height: 28px; object-fit: contain; display: block; }
+
+.rail-brand {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;
+  flex: 1;
+  overflow: hidden;
+}
+
+.rail-toggle {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.16);
+  color: #fff;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rail-toggle::after { display: none; }
+.rail-toggle:hover { background: rgba(255,255,255,0.28); transform: none; box-shadow: none; }
+.rail-toggle svg { transition: transform 0.25s ease; }
+
+/* nav: glass pills; the active one bleeds into the page */
+.rail-nav {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rail-nav a {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 48px;
+  padding: 0 18px;
+  margin-right: 14px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: linear-gradient(180deg, rgba(255,255,255,0.15), rgba(255,255,255,0.06));
+  color: rgba(255,255,255,0.92);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s ease, margin 0.25s ease, border-radius 0.25s ease, color 0.2s ease;
+}
+.rail-nav a svg { flex-shrink: 0; }
+.rail-nav a:hover:not(.active) { background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.1)); }
+
+.rail-nav a.active {
+  margin-right: -2px;          /* overlaps the page by 2px: no hairline at fractional zoom levels */
+  border-radius: 24px 0 0 24px;
+  border-color: transparent;
+  background: var(--ivory);
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* concave notches above and below the active pill */
+.rail-nav a.active::before,
+.rail-nav a.active::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  width: calc(var(--rail-r) + 2px);
+  height: calc(var(--rail-r) + 1px);
+  pointer-events: none;
+}
+.rail-nav a.active::before {
+  top: calc(var(--rail-r) * -1);
+  background: radial-gradient(circle at 0 0, transparent calc(var(--rail-r) - 0.5px), var(--ivory) var(--rail-r));
+}
+.rail-nav a.active::after {
+  bottom: calc(var(--rail-r) * -1);
+  background: radial-gradient(circle at 0 100%, transparent calc(var(--rail-r) - 0.5px), var(--ivory) var(--rail-r));
+}
+
+/* footer: profile + log out */
+.rail-foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 14px;
+}
+
+.rail-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px 7px 7px;
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.05));
+  text-decoration: none;
+  color: #fff;
+  min-width: 0;
+}
+.rail-user:hover { background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0.09)); }
 
 .avatar-img {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.25);
+  border: 2px solid rgba(255,255,255,0.3);
   flex-shrink: 0;
 }
-
 .avatar-fallback {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.16);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   flex-shrink: 0;
 }
-
-.sidebar-profile-text { overflow: hidden; }
-.sidebar-profile-name {
+.rail-user-text { min-width: 0; line-height: 1.25; }
+.rail-user-name {
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 13px;
   color: #fff;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sidebar-profile-role {
+.rail-user-role {
   font-size: 11px;
-  color: #cdbba5;
-  margin-top: 1px;
+  color: rgba(255,255,255,0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sidebar nav { flex: 1; }
-
-.sidebar nav a {
+.rail-logout {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
-  margin: 2px 10px;
-  border-radius: 10px;
+  gap: 14px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 22px;
+  color: rgba(255,255,255,0.8);
   font-size: 13.5px;
-  font-weight: 500;
-  text-decoration: none;
-  color: #e3d5c4;
-  white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.sidebar nav a svg { flex-shrink: 0; opacity: 0.85; }
-
-.sidebar nav a.active {
-  background: rgba(255,255,255,0.14);
-  color: #fff;
   font-weight: 600;
-}
-.sidebar nav a.active svg { opacity: 1; }
-
-.sidebar nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
-
-.sidebar-logout {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
-  margin: 10px 10px 0;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 500;
   text-decoration: none;
-  color: #e3d5c4;
   white-space: nowrap;
-  border-top: 1px solid rgba(255,255,255,0.1);
-  padding-top: 16px;
 }
-.sidebar-logout:hover { color: #fff; }
+.rail-logout:hover { color: #fff; background: rgba(255,255,255,0.1); }
 
-.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+/* collapsed rail: icon circles only */
+html[data-rail="collapsed"] .rail-brand,
+html[data-rail="collapsed"] .rail-toggle,
+html[data-rail="collapsed"] .rail-nav a span,
+html[data-rail="collapsed"] .rail-user-text,
+html[data-rail="collapsed"] .rail-logout span { display: none; }
+
+html[data-rail="collapsed"] .rail-head { padding-right: 0; }
+html[data-rail="collapsed"] .rail-nav a,
+html[data-rail="collapsed"] .rail-nav a.active {
+  width: 48px;
+  padding: 0;
+  margin-right: 0;
+  justify-content: center;
+  border-radius: 50%;
+}
+html[data-rail="collapsed"] .rail-nav a.active {
+  border-color: transparent;
+}
+html[data-rail="collapsed"] .rail-nav a.active::before,
+html[data-rail="collapsed"] .rail-nav a.active::after { display: none; }
+html[data-rail="collapsed"] .rail-foot { padding-right: 0; align-items: flex-start; }
+html[data-rail="collapsed"] .rail-user { padding: 4px; width: 48px; height: 48px; justify-content: center; border-radius: 50%; }
+html[data-rail="collapsed"] .rail-logout { width: 48px; padding: 0; justify-content: center; border-radius: 50%; }
+
+/* page panel that sits inside the capsule */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 10px 10px 10px 0;
+  border-radius: 22px;
+  background: var(--ivory);
+  overflow: hidden;
+}
 
 .topbar {
-  background: var(--ivory-panel);
+  background: transparent;
   border-bottom: 1px solid var(--border);
-  padding: 14px 28px;
+  padding: 16px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .topbar .page-title { font-size: 20px; font-weight: 700; }
@@ -469,7 +646,7 @@ a { color: inherit; }
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--ivory);
+  background: var(--ivory-panel);
   border: 1px solid var(--border);
   border-radius: 20px;
   padding: 8px 14px;
@@ -486,6 +663,8 @@ a { color: inherit; }
 .topbar-search svg { flex-shrink: 0; }
 
 .content {
+  flex: 1;
+  overflow-y: auto;
   padding: 26px 28px;
   animation: pageFade 0.28s ease-out;
 }
@@ -501,17 +680,6 @@ a { color: inherit; }
 .card:hover {
   box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 }
-
-.sidebar-toggle {
-  background: transparent;
-  border: none;
-  color: var(--text);
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
-  border-radius: 4px;
-}
-.sidebar-toggle:hover { background: var(--border); }
 
 .theme-toggle {
   display: flex;
@@ -909,4 +1077,82 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
   font-size: 16px;
   line-height: 1;
   padding: 2px 0;
+}
+
+/* ---------- Logo placement (sidebar + login) ---------- */
+
+
+.auth-illustration .auth-logo {
+  width: 100%;
+  max-width: 250px;
+  height: auto;
+  display: block;
+}
+.auth-illustration .illus-footer {
+  text-align: left;
+  line-height: 1.5;
+  max-width: 200px;
+  padding: 0 0 0 4px;
+}
+@media (max-width: 720px) {
+  .auth-illustration .illus-footer { max-width: none; text-align: center; padding: 0; }
+}
+
+@media (max-width: 860px) {
+  body.app { padding: 6px; }
+  .shell { border-radius: 24px; }
+  .main { margin: 6px 6px 6px 0; }
+  .topbar { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+  .user-menu { flex-wrap: wrap; gap: 8px; }
+  .topbar-search input { width: 100px; }
+  .content { padding: 18px 16px; }
+  .stat-grid { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr !important; }
+  .form-row-split { grid-template-columns: 1fr; }
+  .card { overflow-x: auto; }
+}
+
+/* keep badge text on one line now that the page sits inside the capsule */
+.badge, .status-badge, .mini-badge { white-space: nowrap; }
+
+/* ---------- Floating logo on the login page ---------- */
+
+.logo-float {
+  position: relative;
+  width: 100%;
+  max-width: 250px;
+  padding-bottom: 22px;      /* room for the shadow underneath */
+}
+
+.logo-float .auth-logo {
+  animation: logoFloat 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* soft shadow on the "floor": shrinks and fades as the logo rises */
+.logo-shadow {
+  position: absolute;
+  left: 20%;
+  bottom: 0;
+  width: 60%;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(74, 54, 39, 0.30) 0%, rgba(74, 54, 39, 0) 70%);
+  animation: logoShadow 6s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0)     rotate(-0.8deg); }
+  50%      { transform: translateY(-14px) rotate(0.8deg); }
+}
+
+@keyframes logoShadow {
+  0%, 100% { transform: scale(1);    opacity: 0.9; }
+  50%      { transform: scale(0.72); opacity: 0.45; }
+}
+
+/* people who ask their system to reduce motion get a still logo */
+@media (prefers-reduced-motion: reduce) {
+  .logo-float .auth-logo,
+  .logo-shadow { animation: none; }
 }

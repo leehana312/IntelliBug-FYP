@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IntelliBug &mdash; Sign In</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="alternate icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
@@ -11,35 +13,13 @@
   <div class="auth-card">
 
     <div class="auth-illustration">
-      <div class="brand-mark">IntelliBug<span>Bug severity classification &amp; recommendation</span></div>
       <div class="illus-wrap">
-        <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="60" cy="250" r="50" fill="#f4ecd2" opacity="0.6"/>
-          <circle cx="270" cy="60" r="35" fill="#f4ecd2" opacity="0.5"/>
-          <circle cx="40" cy="60" r="18" fill="#e8dfc8" opacity="0.7"/>
-          <circle cx="280" cy="260" r="22" fill="#e8dfc8" opacity="0.6"/>
-
-          <circle cx="150" cy="140" r="70" fill="#fffdf7" stroke="#6e4e37" stroke-width="6"/>
-          <line x1="198" y1="188" x2="250" y2="240" stroke="#6e4e37" stroke-width="10" stroke-linecap="round"/>
-
-          <line x1="120" y1="140" x2="100" y2="128" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-          <line x1="120" y1="155" x2="98" y2="155" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-          <line x1="120" y1="170" x2="100" y2="182" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-          <line x1="180" y1="140" x2="200" y2="128" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-          <line x1="180" y1="155" x2="202" y2="155" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-          <line x1="180" y1="170" x2="200" y2="182" stroke="#6e4e37" stroke-width="4" stroke-linecap="round"/>
-
-          <ellipse cx="150" cy="150" rx="34" ry="26" fill="#9c7c5e"/>
-          <circle cx="150" cy="118" r="14" fill="#9c7c5e"/>
-          <circle cx="144" cy="115" r="3" fill="#2c2119"/>
-          <circle cx="156" cy="115" r="3" fill="#2c2119"/>
-
-          <circle cx="60" cy="90" r="8" fill="#c0392b"/>
-          <circle cx="250" cy="200" r="8" fill="#b8860b"/>
-          <circle cx="90" cy="240" r="8" fill="#4a7856"/>
-        </svg>
+        <div class="logo-float">
+          <img src="{{ url_for('static', filename='intellibug_logo.png') }}" alt="IntelliBug" class="auth-logo">
+          <span class="logo-shadow" aria-hidden="true"></span>
+        </div>
       </div>
-      <div class="illus-footer">IntelliBug &middot; FYP QA System</div>
+      <div class="illus-footer">Bug severity classification &amp; recommendation</div>
     </div>
 
     <div class="auth-form-side" style="justify-content:center; align-items:center; text-align:center;">

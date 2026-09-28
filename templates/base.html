@@ -4,53 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IntelliBug &mdash; {% block title %}Dashboard{% endblock %}</title>
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link rel="alternate icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 <script>
+  // Runs before the first paint, so the theme and the rail size are
+  // already correct and nothing flashes or animates on page load.
   (function() {
-    const saved = document.documentElement.getAttribute('data-theme');
-    if (saved === 'system') {
+    const root = document.documentElement;
+    if (root.getAttribute('data-theme') === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
+    const saved = localStorage.getItem('sidebarCollapsed');
+    const small = window.innerWidth <= 860;
+    if (saved === 'true' || small) {
+      root.setAttribute('data-rail', 'collapsed');
     }
   })();
 </script>
 </head>
-<body>
+<body class="app">
 {% import "icons.html" as icons %}
 <div class="shell">
 
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-profile">
-      {% if current_user.avatar_url %}
-        <img src="{{ current_user.avatar_url }}" alt="" class="avatar-img">
-      {% else %}
-        <div class="avatar-fallback">{{ icons.user() }}</div>
-      {% endif %}
-      <div class="sidebar-profile-text">
-        <div class="sidebar-profile-name">{{ current_user.full_name }}</div>
-        <div class="sidebar-profile-role">{{ current_user.role }}</div>
-      </div>
+    <div class="rail-head">
+      <button type="button" class="rail-badge" id="rail-badge" title="IntelliBug">
+        <img src="{{ url_for('static', filename='intellibug_mark_light.png') }}" alt="IntelliBug">
+      </button>
+      <span class="rail-brand">IntelliBug</span>
+      <button type="button" class="rail-toggle" id="sidebar-toggle" title="Collapse menu">{{ icons.chevron_left() }}</button>
     </div>
 
-    <nav>
-      <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.endpoint == 'dashboard' }}">{{ icons.dashboard() }}<span>Dashboard</span></a>
-      <a href="{{ url_for('submit_bug_page') }}" class="{{ 'active' if request.endpoint == 'submit_bug_page' }}">{{ icons.submit() }}<span>Submit Bug</span></a>
-      <a href="{{ url_for('bug_reports') }}" class="{{ 'active' if request.endpoint in ['bug_reports', 'bug_detail'] }}">{{ icons.reports() }}<span>Bug Reports</span></a>
-      <a href="{{ url_for('analytics') }}" class="{{ 'active' if request.endpoint == 'analytics' }}">{{ icons.analytics() }}<span>Analytics</span></a>
-      <a href="{{ url_for('settings') }}" class="{{ 'active' if request.endpoint == 'settings' }}">{{ icons.settings() }}<span>Settings</span></a>
+    <nav class="rail-nav">
+      <a href="{{ url_for('dashboard') }}" title="Dashboard" class="{{ 'active' if request.endpoint == 'dashboard' }}">{{ icons.dashboard() }}<span>Dashboard</span></a>
+      <a href="{{ url_for('submit_bug_page') }}" title="Submit Bug" class="{{ 'active' if request.endpoint == 'submit_bug_page' }}">{{ icons.submit() }}<span>Submit Bug</span></a>
+      <a href="{{ url_for('bug_reports') }}" title="Bug Reports" class="{{ 'active' if request.endpoint in ['bug_reports', 'bug_detail'] }}">{{ icons.reports() }}<span>Bug Reports</span></a>
+      <a href="{{ url_for('analytics') }}" title="Analytics" class="{{ 'active' if request.endpoint == 'analytics' }}">{{ icons.analytics() }}<span>Analytics</span></a>
+      <a href="{{ url_for('settings') }}" title="Settings" class="{{ 'active' if request.endpoint == 'settings' }}">{{ icons.settings() }}<span>Settings</span></a>
     </nav>
 
-    <a href="{{ url_for('logout') }}" class="sidebar-logout">{{ icons.logout() }}<span>Log out</span></a>
+    <div class="rail-foot">
+      <a href="{{ url_for('settings') }}" class="rail-user" title="{{ current_user.full_name }}">
+        {% if current_user.avatar_url %}
+          <img src="{{ current_user.avatar_url }}" alt="" class="avatar-img">
+        {% else %}
+          <div class="avatar-fallback">{{ icons.user() }}</div>
+        {% endif %}
+        <div class="rail-user-text">
+          <div class="rail-user-name">{{ current_user.full_name }}</div>
+          <div class="rail-user-role">{{ current_user.role }}</div>
+        </div>
+      </a>
+      <a href="{{ url_for('logout') }}" class="rail-logout" title="Log out">{{ icons.logout() }}<span>Log out</span></a>
+    </div>
   </aside>
 
   <div class="main">
     <div class="topbar">
-      <div style="display:flex; align-items:center; gap:14px;">
-        <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle navigation">&#9776;</button>
-        <div>
-          <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
-          <div class="page-sub">{% block page_sub %}{% endblock %}</div>
-        </div>
+      <div>
+        <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="page-sub">{% block page_sub %}{% endblock %}</div>
       </div>
       <div class="user-menu">
         <form class="topbar-search" action="{{ url_for('bug_reports') }}" method="GET">
@@ -82,14 +97,16 @@
 </div>
 
 <script>
-  const sidebar = document.getElementById('sidebar');
-  const toggleBtn = document.getElementById('sidebar-toggle');
-  if (localStorage.getItem('sidebarCollapsed') === 'true') {
-    sidebar.classList.add('collapsed');
+  // Rail: chevron collapses to icons, the round badge expands it again.
+  const rootEl = document.documentElement;
+  function setRail(collapsed) {
+    if (collapsed) rootEl.setAttribute('data-rail', 'collapsed');
+    else rootEl.removeAttribute('data-rail');
+    localStorage.setItem('sidebarCollapsed', collapsed ? 'true' : 'false');
   }
-  toggleBtn.addEventListener('click', () => {
-    sidebar.classList.toggle('collapsed');
-    localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+  document.getElementById('sidebar-toggle').addEventListener('click', () => setRail(true));
+  document.getElementById('rail-badge').addEventListener('click', () => {
+    if (rootEl.getAttribute('data-rail') === 'collapsed') setRail(false);
   });
 
   const themeButtons = document.querySelectorAll('#theme-toggle button');
@@ -104,19 +121,23 @@
       if (value === 'system') {
         applied = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-      document.documentElement.setAttribute('data-theme', applied);
+      rootEl.setAttribute('data-theme', applied);
       const formData = new FormData();
       formData.append('theme', value);
       await fetch("{{ url_for('set_theme') }}", { method: 'POST', body: formData });
     });
   });
 
-  // Auto-dismiss flash messages after 3 seconds.
+  // If the browser restores this page from its back/forward memory
+  // (Back button), reload it so the data is current.
+  window.addEventListener('pageshow', (e) => { if (e.persisted) location.reload(); });
+
+  // Flash messages fade out after 5 seconds.
   document.querySelectorAll('.flash').forEach(el => {
     setTimeout(() => {
       el.classList.add('flash-hide');
       setTimeout(() => el.remove(), 300);
-    }, 3000);
+    }, 5000);
   });
 </script>
 

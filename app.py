@@ -1,19 +1,3 @@
-"""
-Phase 9 & 10: QA Dashboard + Database
-FYP II - Bug Severity Classification System
-
-Full application: login-protected dashboard, bug submission,
-bug reports list, bug detail view, analytics, and account settings.
-Every submitted bug is saved to the database so these pages show
-real data, not placeholders.
-
-Run this from your FYP 2 root folder, with venv active:
-    python app.py
-
-Then open your browser to:
-    http://127.0.0.1:5000
-"""
-
 import re
 import os
 import uuid
@@ -97,6 +81,22 @@ login_manager.login_view = "login"
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
+
+
+@app.after_request
+def stop_browser_caching_pages(response):
+    """
+    Every page here shows live data (bug status, counts) and private
+    content. Without this header the browser keeps a copy and shows
+    it again on the Back button, so a status you just changed still
+    looks old until you refresh, and a page you saw before logging
+    out can reappear. Uploaded images under /static are left alone
+    so they still cache normally.
+    """
+    if request.endpoint != "static":
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 # ---------------------------------------------------------
