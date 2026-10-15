@@ -34,7 +34,6 @@
         <img src="{{ url_for('static', filename='intellibug_mark_light.png') }}" alt="IntelliBug">
       </button>
       <span class="rail-brand">IntelliBug</span>
-      <button type="button" class="rail-toggle" id="sidebar-toggle" title="Collapse menu">{{ icons.chevron_left() }}</button>
     </div>
 
     <nav class="rail-nav">
@@ -97,16 +96,15 @@
 </div>
 
 <script>
-  // Rail: chevron collapses to icons, the round badge expands it again.
+  // Rail: the round badge toggles collapsed/expanded both ways.
   const rootEl = document.documentElement;
   function setRail(collapsed) {
     if (collapsed) rootEl.setAttribute('data-rail', 'collapsed');
     else rootEl.removeAttribute('data-rail');
     localStorage.setItem('sidebarCollapsed', collapsed ? 'true' : 'false');
   }
-  document.getElementById('sidebar-toggle').addEventListener('click', () => setRail(true));
   document.getElementById('rail-badge').addEventListener('click', () => {
-    if (rootEl.getAttribute('data-rail') === 'collapsed') setRail(false);
+    setRail(rootEl.getAttribute('data-rail') !== 'collapsed');
   });
 
   const themeButtons = document.querySelectorAll('#theme-toggle button');

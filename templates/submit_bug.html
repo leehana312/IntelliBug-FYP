@@ -11,23 +11,23 @@
   <div class="card">
     <form id="bug-form" enctype="multipart/form-data">
       <div class="form-row">
-        <label for="title">Bug Title</label>
+        <label for="title">Bug Title *</label>
         <input type="text" id="title" name="title" placeholder="e.g. Login button unresponsive on Safari" required>
       </div>
 
       <div class="form-row form-row-split">
         <div>
-          <label for="product">Product / Module</label>
+          <label for="product">Product / Module (Optional)</label>
           <input type="text" id="product" name="product" placeholder="e.g. Customer Portal">
         </div>
         <div>
-          <label for="environment">Environment</label>
+          <label for="environment">Environment (Optional)</label>
           <input type="text" id="environment" name="environment" placeholder="e.g. Chrome 126, Windows 11">
         </div>
       </div>
 
       <div class="form-row">
-        <label for="description">Bug Description</label>
+        <label for="description">Bug Description *</label>
         <textarea id="description" name="description" rows="5" placeholder="Expected: user reaches dashboard. Actual: page reloads to blank login form." required></textarea>
       </div>
 

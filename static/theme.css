@@ -399,13 +399,12 @@ html[data-rail="collapsed"] .sidebar { width: 88px; }
     radial-gradient(1.4px 1.4px at 30% 78%, rgba(255,255,255,0.7), transparent 100%);
 }
 
-/* header: round logo badge, brand name, collapse chevron */
+/* header: round logo badge (doubles as the collapse/expand toggle), brand name */
 .rail-head {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-right: 14px;
   margin-bottom: 22px;
   height: 46px;
 }
@@ -438,25 +437,6 @@ html[data-rail="collapsed"] .sidebar { width: 88px; }
   flex: 1;
   overflow: hidden;
 }
-
-.rail-toggle {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  margin: 0;
-  padding: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.16);
-  color: #fff;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.rail-toggle::after { display: none; }
-.rail-toggle:hover { background: rgba(255,255,255,0.28); transform: none; box-shadow: none; }
-.rail-toggle svg { transition: transform 0.25s ease; }
 
 /* nav: glass pills; the active one bleeds into the page */
 .rail-nav {
@@ -591,12 +571,10 @@ html[data-rail="collapsed"] .sidebar { width: 88px; }
 
 /* collapsed rail: icon circles only */
 html[data-rail="collapsed"] .rail-brand,
-html[data-rail="collapsed"] .rail-toggle,
 html[data-rail="collapsed"] .rail-nav a span,
 html[data-rail="collapsed"] .rail-user-text,
 html[data-rail="collapsed"] .rail-logout span { display: none; }
 
-html[data-rail="collapsed"] .rail-head { padding-right: 0; }
 html[data-rail="collapsed"] .rail-nav a,
 html[data-rail="collapsed"] .rail-nav a.active {
   width: 48px;
