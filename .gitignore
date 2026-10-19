@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 dataset/*.xlsx
 dataset/*.csv
+tests/screenshots/
+.pytest_cache/
+static/uploads/

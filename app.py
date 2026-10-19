@@ -1,3 +1,19 @@
+"""
+Phase 9 & 10: QA Dashboard + Database
+FYP II - Bug Severity Classification System
+
+Full application: login-protected dashboard, bug submission,
+bug reports list, bug detail view, analytics, and account settings.
+Every submitted bug is saved to the database so these pages show
+real data, not placeholders.
+
+Run this from your FYP 2 root folder, with venv active:
+    python app.py
+
+Then open your browser to:
+    http://127.0.0.1:5000
+"""
+
 import re
 import os
 import uuid
@@ -326,10 +342,14 @@ def classify():
     product = request.form.get("product", "").strip()
     environment = request.form.get("environment", "").strip()
 
-    if not title or not description:
-        return jsonify({"error": "Please fill in both the title and description."}), 400
-
     screenshot = request.files.get("screenshot")
+
+    if not title or not description or not product or not environment:
+        return jsonify({"error": "Please fill in every field before submitting."}), 400
+
+    if not screenshot or not screenshot.filename:
+        return jsonify({"error": "Please attach a screenshot of the issue."}), 400
+
     screenshot_path = save_uploaded_image(screenshot, SCREENSHOT_UPLOAD_DIR)
 
     combined_text = clean_text(title + " " + description)
@@ -530,6 +550,18 @@ def set_theme():
     current_user.theme = theme
     db.session.commit()
     return jsonify({"theme": theme})
+
+
+if os.getenv("TESTING") == "1":
+    @app.route("/_test_login")
+    def test_login():
+        user = User.query.filter_by(email="demo@example.com").first()
+        if user is None:
+            user = User(full_name="Demo Tester", email="demo@example.com", google_id="demo-google-id")
+            db.session.add(user)
+            db.session.commit()
+        login_user(user)
+        return redirect(url_for("dashboard"))
 
 
 if __name__ == "__main__":

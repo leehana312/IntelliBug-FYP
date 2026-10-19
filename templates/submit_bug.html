@@ -11,29 +11,29 @@
   <div class="card">
     <form id="bug-form" enctype="multipart/form-data">
       <div class="form-row">
-        <label for="title">Bug Title *</label>
+        <label for="title">Bug Title</label>
         <input type="text" id="title" name="title" placeholder="e.g. Login button unresponsive on Safari" required>
       </div>
 
       <div class="form-row form-row-split">
         <div>
-          <label for="product">Product / Module (Optional)</label>
-          <input type="text" id="product" name="product" placeholder="e.g. Customer Portal">
+          <label for="product">Product / Module</label>
+          <input type="text" id="product" name="product" placeholder="e.g. Customer Portal" required>
         </div>
         <div>
-          <label for="environment">Environment (Optional)</label>
-          <input type="text" id="environment" name="environment" placeholder="e.g. Chrome 126, Windows 11">
+          <label for="environment">Environment</label>
+          <input type="text" id="environment" name="environment" placeholder="e.g. Chrome 126, Windows 11" required>
         </div>
       </div>
 
       <div class="form-row">
-        <label for="description">Bug Description *</label>
+        <label for="description">Bug Description</label>
         <textarea id="description" name="description" rows="5" placeholder="Expected: user reaches dashboard. Actual: page reloads to blank login form." required></textarea>
       </div>
 
       <div class="form-row">
-        <label>Screenshot of the Issue (Optional)</label>
-        <div class="dropzone" id="dropzone">
+        <label>Screenshot of the Issue</label>
+        <div class="dropzone" id="dropzone" tabindex="0">
           {{ icons.camera() }}
           <div>Click to browse, drag a file here, or paste a screenshot</div>
           <div class="dz-hint">PNG, JPG, or GIF</div>

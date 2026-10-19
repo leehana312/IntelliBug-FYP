@@ -45,6 +45,12 @@ function showPreview(file) {
 
 // Click to browse
 dropzone.addEventListener("click", () => screenshotInput.click());
+dropzone.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") {
+    e.preventDefault();
+    screenshotInput.click();
+  }
+});
 
 screenshotInput.addEventListener("change", () => {
   if (screenshotInput.files[0]) showPreview(screenshotInput.files[0]);
@@ -92,6 +98,17 @@ form.addEventListener("submit", async (e) => {
 
   errorMsg.hidden = true;
   resultPanel.hidden = true;
+
+  // The file input sits hidden behind the dropzone, so the browser's
+  // own "required" validation can't show a bubble on it. Check it
+  // here instead, the same rule the server enforces.
+  if (!screenshotInput.files[0]) {
+    errorMsg.textContent = "Please attach a screenshot of the issue.";
+    errorMsg.hidden = false;
+    dropzone.focus();
+    return;
+  }
+
   submitBtn.disabled = true;
   submitBtn.textContent = "Classifying...";
 
