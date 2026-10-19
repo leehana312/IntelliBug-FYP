@@ -109,3 +109,21 @@ def test_logout_returns_to_login_page(driver, base_url):
     login_page.login_as_demo()
     login_page.logout()
     assert "/login" in driver.current_url
+
+
+def test_user_cannot_see_another_users_bug(driver, base_url, new_bug):
+    # new_bug was reported by the demo user. Now sign in as someone else.
+    reports_page = BugReportsPage(driver, base_url)
+    reports_page.open()
+    bug_url = reports_page.bug_link(new_bug)
+
+    LoginPage(driver, base_url).login_as("anna")
+
+    # 1. The bug is not in the other user's list.
+    reports_page.open()
+    assert not reports_page.has_bug(new_bug)
+
+    # 2. Opening its address directly sends them back to their own list.
+    driver.get(bug_url)
+    assert driver.current_url.rstrip("/").endswith("/reports")
+    assert new_bug not in driver.page_source

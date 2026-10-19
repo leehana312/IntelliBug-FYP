@@ -12,8 +12,14 @@ class BugReportsPage:
     def open(self):
         self.driver.get(self.base_url + "/reports")
         WebDriverWait(self.driver, 15).until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, "table"))
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "form.filters"))
         )
+
+    def has_bug(self, title):
+        return len(self.driver.find_elements(By.LINK_TEXT, title)) > 0
+
+    def bug_link(self, title):
+        return self.driver.find_element(By.LINK_TEXT, title).get_attribute("href")
 
     def open_bug(self, title):
         self.driver.find_element(By.LINK_TEXT, title).click()

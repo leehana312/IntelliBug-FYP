@@ -280,28 +280,36 @@ def logout():
     return redirect(url_for("login"))
 
 
+def my_reports():
+    """
+    Every query for bug reports starts here, so a signed-in user only
+    ever sees the bugs they reported themselves.
+    """
+    return BugReport.query.filter_by(reported_by=current_user.id)
+
+
 # ---------------------------------------------------------
 # Dashboard
 # ---------------------------------------------------------
 @app.route("/")
 @login_required
 def dashboard():
-    critical_count = BugReport.query.filter_by(severity="Critical", status="Open").count()
-    medium_count = BugReport.query.filter_by(severity="Medium", status="Open").count()
-    low_count = BugReport.query.filter_by(severity="Low", status="Open").count()
+    critical_count = my_reports().filter_by(severity="Critical", status="Open").count()
+    medium_count = my_reports().filter_by(severity="Medium", status="Open").count()
+    low_count = my_reports().filter_by(severity="Low", status="Open").count()
     total_open = critical_count + medium_count + low_count
 
-    recent = BugReport.query.order_by(BugReport.created_at.desc()).limit(5).all()
+    recent = my_reports().order_by(BugReport.created_at.desc()).limit(5).all()
 
     recent_screenshots = (
-        BugReport.query.filter(BugReport.screenshot_path.isnot(None))
+        my_reports().filter(BugReport.screenshot_path.isnot(None))
         .order_by(BugReport.created_at.desc())
         .limit(4)
         .all()
     )
 
     latest_critical = (
-        BugReport.query.filter_by(severity="Critical")
+        my_reports().filter_by(severity="Critical")
         .order_by(BugReport.created_at.desc())
         .first()
     )
@@ -391,7 +399,7 @@ def bug_reports():
     status_filter = request.args.get("status", "All")
     search = request.args.get("q", "").strip()
 
-    query = BugReport.query
+    query = my_reports()
 
     if severity_filter != "All":
         query = query.filter_by(severity=severity_filter)
@@ -414,7 +422,7 @@ def bug_reports():
 @app.route("/reports/<int:report_id>")
 @login_required
 def bug_detail(report_id):
-    report = db.session.get(BugReport, report_id)
+    report = my_reports().filter_by(id=report_id).first()
     if report is None:
         flash("Bug report not found.", "error")
         return redirect(url_for("bug_reports"))
@@ -437,7 +445,7 @@ def bug_detail(report_id):
 @app.route("/reports/<int:report_id>/status", methods=["POST"])
 @login_required
 def update_status(report_id):
-    report = db.session.get(BugReport, report_id)
+    report = my_reports().filter_by(id=report_id).first()
     if report is None:
         return jsonify({"error": "Not found"}), 404
 
@@ -459,7 +467,7 @@ def update_status(report_id):
 @app.route("/analytics")
 @login_required
 def analytics():
-    all_reports = BugReport.query.all()
+    all_reports = my_reports().all()
 
     # Bug reports over time, last 8 weeks, grouped by severity
     weeks = [(datetime.utcnow() - timedelta(weeks=i)).isocalendar()[1] for i in range(7, -1, -1)]
@@ -555,9 +563,13 @@ def set_theme():
 if os.getenv("TESTING") == "1":
     @app.route("/_test_login")
     def test_login():
-        user = User.query.filter_by(email="demo@example.com").first()
+        # /_test_login logs in as the default demo user.
+        # /_test_login?user=anna logs in as a second test user, anna@example.com.
+        name = "".join(ch for ch in request.args.get("user", "demo") if ch.isalnum()) or "demo"
+        email = f"{name}@example.com"
+        user = User.query.filter_by(email=email).first()
         if user is None:
-            user = User(full_name="Demo Tester", email="demo@example.com", google_id="demo-google-id")
+            user = User(full_name=f"Tester {name.title()}", email=email, google_id=f"test-google-id-{name}")
             db.session.add(user)
             db.session.commit()
         login_user(user)

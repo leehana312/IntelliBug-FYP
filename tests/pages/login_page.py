@@ -18,7 +18,11 @@ class LoginPage:
         self.base_url = base_url
 
     def login_as_demo(self):
-        self.driver.get(self.base_url + "/_test_login")
+        self.login_as("demo")
+
+    def login_as(self, name):
+        """Logs in as name@example.com (created on first use)."""
+        self.driver.get(self.base_url + "/_test_login?user=" + name)
         WebDriverWait(self.driver, 15).until(
             EC.visibility_of_element_located(self.SIDEBAR)
         )
