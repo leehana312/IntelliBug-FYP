@@ -1,0 +1,15 @@
+flask
+flask-login
+flask-sqlalchemy
+authlib
+requests
+python-dotenv
+anthropic
+xgboost
+scikit-learn
+joblib
+numpy
+pandas
+gunicorn
+pymysql
+psycopg2-binary
