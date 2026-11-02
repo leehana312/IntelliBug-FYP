@@ -576,10 +576,7 @@ if os.getenv("TESTING") == "1":
         return redirect(url_for("dashboard"))
 
 
-# Create the tables when the module loads, so gunicorn on Render also
-# builds them. Without this they only exist under "python app.py".
-with app.app_context():
-    db.create_all()
-
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
