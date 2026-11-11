@@ -37,6 +37,13 @@ from models import db, User, BugReport
 load_dotenv(override=True)
 
 app = Flask(__name__)
+
+# On Render the app sits behind a proxy that handles HTTPS. ProxyFix makes
+# Flask trust the proxy's headers, so url_for(..., _external=True) builds
+# https:// links (needed for the Google OAuth callback to be accepted).
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-key-change-this")
 
 # ---------------------------------------------------------
@@ -80,9 +87,12 @@ def save_uploaded_image(file_storage, upload_dir):
 # your local MySQL server. Format:
 #   mysql+pymysql://root:@localhost/intellibug
 # (XAMPP's default MySQL user is root with no password)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv(
-    "DATABASE_URL", "sqlite:///intellibug.db"
-)
+database_url = os.getenv("DATABASE_URL", "sqlite:///intellibug.db")
+# Some hosts hand out "postgres://", which SQLAlchemy no longer accepts.
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
