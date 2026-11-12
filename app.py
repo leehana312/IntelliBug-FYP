@@ -88,9 +88,13 @@ def save_uploaded_image(file_storage, upload_dir):
 #   mysql+pymysql://root:@localhost/intellibug
 # (XAMPP's default MySQL user is root with no password)
 database_url = os.getenv("DATABASE_URL", "sqlite:///intellibug.db")
-# Some hosts hand out "postgres://", which SQLAlchemy no longer accepts.
-if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql://", 1)
+# Render hands out "postgres://" or "postgresql://" URLs. Point them at the
+# psycopg2 driver explicitly: SQLAlchemy 2.1+ otherwise defaults to the newer
+# "psycopg" (v3) driver, which isn't installed.
+for prefix in ("postgres://", "postgresql://"):
+    if database_url.startswith(prefix):
+        database_url = "postgresql+psycopg2://" + database_url[len(prefix):]
+        break
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
